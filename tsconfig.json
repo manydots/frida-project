@@ -1,0 +1,22 @@
+{
+    "compilerOptions": {
+        "baseUrl": ".",
+        "paths": { "@/*": ["src/*"] },
+        "skipLibCheck": true,
+        "target": "es5",
+        "lib": ["es5", "dom"],
+        "allowJs": true,
+        "noEmit": false,
+        "strict": true,
+        "esModuleInterop": true,
+        "moduleResolution": "node",
+        "module": "esnext",
+
+        "sourceMap": false,
+        "removeComments": true,
+        "inlineSourceMap": false,
+        "inlineSources": false
+    },
+    "include": ["src/**/*"],
+    "exclude": ["node_modules", "dist"]
+}
