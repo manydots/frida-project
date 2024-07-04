@@ -1,14 +1,25 @@
 ## 工具说明
 
+[frida-project](https://github.com/manydots/frida-project)
+
 -   基于 Webpack4 + TypeScript + Babel 可根据自己的个人爱好拆分Frida代码结构
--   通过 Babel 转义为 es5 语法兼容目前的 frida.so 使用，不需要替换so文件
+-   源码使用ES6语法 const、let、Class、`${字符串模版}`
+-   通过 Babel 转义为 ES5 语法兼容目前的 frida.so 使用，不需要替换so文件
+-   混淆压缩Frida代码
+
+-   现有版本frida.so问题: console.log打印中文乱码、拓展方法有些不支持
+-   Webpack5、Vite、frida-compile构建方式，有时间研究下
+-   本质就是代码兼容转换，不管用什么语法只要转换成低版本语法即可！！！
+
+-   如果没有以上需要，建议忽略
 -   给强迫症吧友一点点启发
 -   需要一点点门槛
 -   总结：好像也没有啥用！！！
 
-### 1.资源安装（依赖资源参见：3.其他资源）
+### 1.资源安装
 
 ```sh
+node -v
 cd frida-project
 npm install
 ```
@@ -16,14 +27,12 @@ npm install
 ### 1.1 构建dp2.8+版本
 
 ```sh
-cd frida-project
 npm run dp
 ```
 
 ### 1.2 构建frida版本(未测试)
 
 ```sh
-cd frida-project
 npm run frida
 ```
 
@@ -41,7 +50,25 @@ npm run build:min
 npm run build
 ```
 
-### 2.常见问题解答FAQ
+### 1.5 package.json重要参数说明
+
+```JavaScript
+/**
+ *  cross-env minimize=false filename=df_game_r.js is_dp=true webpack
+ *
+ *  - cross-env: 设置全局变量的命令
+ *  - minimize: 混淆压缩参数 true开启 false关闭
+ *  - filename: 构建输出文件名称
+ *  - is_dp/is_frida: 当前构建环境标记(不推荐修改)
+ *  - webpack: 使用webpack构建项目,配置文件webpack.config.js
+ *
+ *  vite与frida-compile构建方式未完善、存在问题
+ *  - .env.dp .env.frida vite构建使用的全局变量
+ *  - vite.config.mjs
+*/
+```
+
+### 2.常见问题FAQ
 
 #### 2.1 打包构建后【不需要、不需要、不需要】替换原有frida.so文件！
 
@@ -50,20 +77,20 @@ npm run build
 #### 2.2 TypeScript配置相关(异常按照提示修改)
 
 ```json
-    // tsconfig.json文件
-    {
-        "compilerOptions": {
-            "module": "esnext",
-            ...其他配置
-        },
-        "include": ["src/**/*"],
-        "exclude": ["node_modules", "dist"]
-    }
+// tsconfig.json文件
+{
+    "compilerOptions": {
+        "module": "esnext"
+        //...其他配置
+    },
+    "include": ["src/**/*"],
+    "exclude": ["node_modules", "dist"]
+}
 ```
 
 #### 2.3 import.meta.env 类型ImportMeta上不存在属性env
 
-```text
+```TypeScript
 // env.d.ts文件
 /// <reference types="vite/client" />
 interface ImportMetaEnv {
@@ -125,7 +152,23 @@ rpc.exports = {
 };
 ```
 
-#### 3.其他资源
+#### 3.项目结构
+
+frida-project
+├── src -- 主功能
+│ ├── hook
+│ │ ├── HookEvent.ts -- 封装常用api_xxx方法
+│ │ ├── HookGameEvent.ts -- 核心逻辑实现
+│ │ ├── HookNative.ts -- new NativeFunction定义
+│ │ └── HookType.ts -- hook地址枚举, 也可以在HookGameEvent中直接使用ptr(0x地址)不需要单独定义
+│ ├── enum -- 枚举文件暂时未使用
+│ └── main.ts -- 核心功能入口文件
+├── package.json
+├── tsconfig.json -- ts配置
+├── webpack.config.js -- webpack配置
+│
+
+#### 4.其他资源
 
 -   [Frida](https://frida.re/docs/javascript-api/#console)
 -   [Vite](https://cn.vitejs.dev/guide/env-and-mode.html)
@@ -133,3 +176,4 @@ rpc.exports = {
 -   [frida-compile example](https://github.com/oleavr/frida-agent-example)
 -   [gadget-linux-x86(\_64).so](https://github.com/frida/frida/releases)
 -   [Node.js](https://nodejs.org/zh-cn/download/prebuilt-installer)
+-   [VSCode](https://code.visualstudio.com/)
