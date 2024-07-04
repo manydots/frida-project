@@ -8,6 +8,7 @@ function start(): void {
     gm.logger('=== Frida Start ===');
 
     gm.hook('userLogout');
+    gm.hook('historyLog');
 
     gm.logger('=== Frida End ===');
 }
@@ -26,7 +27,14 @@ function setup(): void {
     if (process.env.is_dp) {
         handler_communication(); // 注册dp通讯
     }
-    start(); // frida自己的配置
+
+    // frida加载本地配置文件
+    if (process.env.is_frida) {
+        // 清风85绝对路径 /home/neople/game/frida_config.json
+        gm.local_load_config('frida_config.json'); // 相对路径
+    }
+
+    start(); // frida主功能
 }
 
 // 入口点

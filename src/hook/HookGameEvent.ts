@@ -30,6 +30,22 @@ const _HookGameEvent = {
             },
             onLeave: function (retval) {}
         });
+    },
+    /**
+     * hook捕获玩家游戏日志
+     * @param gm HookEvent实例
+     */
+    historyLog(gm: any): void {
+        // cHistoryTrace::operator()
+        Interceptor.attach(ptr(hookType.History_Log), {
+            onEnter: function (args) {
+                const history_log = args[1].readUtf8String(-1);
+                const group = history_log?.split(',');
+                const game_event = group ? group[13].slice(1) : null; // 玩家游戏事件 删除多余空格
+                gm.logger(`[HistoryLog]${game_event}`);
+            },
+            onLeave: function (retval) {}
+        });
     }
 };
 

@@ -108,7 +108,50 @@ const _HookNative = {
     // 测试系统API
     strlen1: new NativeFunction(ptr(0x0807e3b0), 'int', ['pointer'], { abi: 'sysv' }),
     // 获取字符串长度
-    strlen: new NativeFunction(Module.getExportByName(null, 'strlen'), 'int', ['pointer'], { abi: 'sysv' })
+    strlen: new NativeFunction(Module.getExportByName(null, 'strlen'), 'int', ['pointer'], { abi: 'sysv' }),
+    // linux读本地文件
+    fopen: new NativeFunction(Module.getExportByName(null, 'fopen'), 'int', ['pointer', 'pointer'], { abi: 'sysv' }),
+    fread: new NativeFunction(Module.getExportByName(null, 'fread'), 'int', ['pointer', 'int', 'int', 'int'], { abi: 'sysv' }),
+    fclose: new NativeFunction(Module.getExportByName(null, 'fclose'), 'int', ['int'], { abi: 'sysv' }),
+
+    // 获取系统时间
+    CSystemTime_getCurSec: new NativeFunction(ptr(0x80cbc9e), 'int', ['pointer'], { abi: 'sysv' }),
+    GlobalData_systemTime: ptr(0x941f714),
+
+    // 线程安全锁
+    Guard_Mutex_Guard: new NativeFunction(ptr(0x810544c), 'int', ['pointer', 'pointer'], { abi: 'sysv' }),
+    Destroy_Guard_Mutex_Guard: new NativeFunction(ptr(0x8105468), 'int', ['pointer'], { abi: 'sysv' }),
+
+    // 服务器内置定时器队列
+    G_TimerQueue: new NativeFunction(ptr(0x80f647c), 'pointer', [], { abi: 'sysv' }),
+
+    // MYSQL操作
+    // 游戏中已打开的数据库索引(游戏数据库非线程安全 谨慎操作)
+    TAIWAN_CAIN: 2,
+    DBMgr_GetDBHandle: new NativeFunction(ptr(0x83f523e), 'pointer', ['pointer', 'int', 'int'], { abi: 'sysv' }),
+    MySQL_MySQL: new NativeFunction(ptr(0x83f3ac8), 'pointer', ['pointer'], { abi: 'sysv' }),
+    MySQL_init: new NativeFunction(ptr(0x83f3ce4), 'int', ['pointer'], { abi: 'sysv' }),
+    MySQL_open: new NativeFunction(ptr(0x83f4024), 'int', ['pointer', 'pointer', 'int', 'pointer', 'pointer', 'pointer'], { abi: 'sysv' }),
+    MySQL_close: new NativeFunction(ptr(0x83f3e74), 'int', ['pointer'], { abi: 'sysv' }),
+    MySQL_set_query_2: new NativeFunction(ptr(0x83f41c0), 'int', ['pointer', 'pointer'], { abi: 'sysv' }),
+    MySQL_set_query_3: new NativeFunction(ptr(0x83f41c0), 'int', ['pointer', 'pointer', 'pointer'], { abi: 'sysv' }),
+    MySQL_set_query_4: new NativeFunction(ptr(0x83f41c0), 'int', ['pointer', 'pointer', 'int', 'int'], { abi: 'sysv' }),
+    MySQL_set_query_5: new NativeFunction(ptr(0x83f41c0), 'int', ['pointer', 'pointer', 'int', 'int', 'int'], { abi: 'sysv' }),
+    MySQL_set_query_6: new NativeFunction(ptr(0x83f41c0), 'int', ['pointer', 'pointer', 'int', 'int', 'int', 'int'], { abi: 'sysv' }),
+    MySQL_exec: new NativeFunction(ptr(0x83f4326), 'int', ['pointer', 'int'], { abi: 'sysv' }),
+    MySQL_exec_query: new NativeFunction(ptr(0x083f5348), 'int', ['pointer'], { abi: 'sysv' }),
+    MySQL_get_n_rows: new NativeFunction(ptr(0x80e236c), 'int', ['pointer'], { abi: 'sysv' }),
+    MySQL_fetch: new NativeFunction(ptr(0x83f44bc), 'int', ['pointer'], { abi: 'sysv' }),
+    MySQL_get_int: new NativeFunction(ptr(0x811692c), 'int', ['pointer', 'int', 'pointer'], { abi: 'sysv' }),
+    MySQL_get_short: new NativeFunction(ptr(0x0814201c), 'int', ['pointer', 'int', 'pointer'], { abi: 'sysv' }),
+    MySQL_get_uint: new NativeFunction(ptr(0x80e22f2), 'int', ['pointer', 'int', 'pointer'], { abi: 'sysv' }),
+    MySQL_get_ulonglong: new NativeFunction(ptr(0x81754c8), 'int', ['pointer', 'int', 'pointer'], { abi: 'sysv' }),
+    MySQL_get_ushort: new NativeFunction(ptr(0x8116990), 'int', ['pointer'], { abi: 'sysv' }),
+    MySQL_get_float: new NativeFunction(ptr(0x844d6d0), 'int', ['pointer', 'int', 'pointer'], { abi: 'sysv' }),
+    MySQL_get_binary: new NativeFunction(ptr(0x812531a), 'int', ['pointer', 'int', 'pointer', 'int'], { abi: 'sysv' }),
+    MySQL_get_binary_length: new NativeFunction(ptr(0x81253de), 'int', ['pointer', 'int'], { abi: 'sysv' }),
+    MySQL_get_str: new NativeFunction(ptr(0x80ecdea), 'int', ['pointer', 'int', 'pointer', 'int'], { abi: 'sysv' }),
+    MySQL_blob_to_str: new NativeFunction(ptr(0x83f452a), 'pointer', ['pointer', 'int', 'pointer', 'int'], { abi: 'sysv' })
 };
 
 export default _HookNative;

@@ -33,7 +33,7 @@ npm install
 npm run dp
 ```
 
-### 1.2 构建frida版本(未测试)
+### 1.2 构建frida版本
 
 ```sh
 npm run frida
@@ -153,6 +153,12 @@ rpc.exports = {
     });
   }
 };
+```
+
+#### 2.5 Window  Error: error:0308010C:digital envelope routines::unsupported
+```JavaScript
+// 命令行增加配置
+NODE_OPTIONS=--openssl-legacy-provider
 ```
 
 #### 3.项目结构
