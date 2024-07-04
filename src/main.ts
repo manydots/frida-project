@@ -7,8 +7,8 @@ const gm = new HookEvent();
 function start(): void {
     gm.logger('=== Frida Start ===');
 
-    gm.hook('userLogout');
-    gm.hook('historyLog');
+    gm.hook('userLogout'); // 角色登入登出处理
+    gm.hook('historyLog'); // 捕获玩家游戏日志
 
     gm.logger('=== Frida End ===');
 }
@@ -119,7 +119,7 @@ rpc.exports = {
             if (process.env.is_dp) {
                 setup();
             }
-            // frida.js单独使用时
+            // frida.js单独使用
             if (process.env.is_frida) {
                 awake();
             }

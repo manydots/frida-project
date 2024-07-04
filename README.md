@@ -155,7 +155,8 @@ rpc.exports = {
 };
 ```
 
-#### 2.5 Window  Error: error:0308010C:digital envelope routines::unsupported
+#### 2.5 Windows Error: error:0308010C:digital envelope routines::unsupported
+
 ```JavaScript
 // 命令行增加配置
 NODE_OPTIONS=--openssl-legacy-provider

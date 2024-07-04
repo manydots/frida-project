@@ -5,7 +5,7 @@ import hookGameEvent from './HookGameEvent';
 class _HookEvent {
     static readonly INVENTORY_TYPE_ITEM: number = 1; // 物品栏
     static readonly INVENTORY_TYPE_AVARTAR: number = 2; // 时装栏
-    private eventHandlers: any = hookGameEvent;
+    private eventHandlers: any = hookGameEvent; // 挂载游戏事件hook
     global_config: any = {};
     timer_dispatcher_list: any = []; // 需要在dispatcher线程执行的任务队列(热加载后会被清空)
 
