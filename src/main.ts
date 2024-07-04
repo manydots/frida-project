@@ -1,7 +1,9 @@
 import HookEvent from './hook/HookEvent';
 const gm = new HookEvent();
 
-// 加载主功能
+/**
+ * 加载主功能
+ */
 function start(): void {
     gm.logger('=== Frida Start ===');
 
@@ -17,7 +19,9 @@ function start(): void {
  * 关于dp2支持frida的说明, 请参阅: /dp2/lua/df/frida.lua
  */
 
-// 准备工作
+/**
+ * 准备工作
+ */
 function setup(): void {
     if (process.env.is_dp) {
         handler_communication(); // 注册dp通讯
@@ -65,7 +69,9 @@ function dp2_lua_call(arg1: any, arg2: any, _arg3: any): any {
     return __dp2_lua_call(arg1, arg2, arg3);
 }
 
-// 注册dp通讯
+/**
+ * 注册dp通讯
+ */
 function handler_communication(): void {
     let addr = Module.getExportByName('libdp2.so', 'dp2_frida_resolver');
     __dp2_resolver = new NativeFunction(addr, 'pointer', ['pointer']);
@@ -83,7 +89,9 @@ function handler_communication(): void {
     gm.logger('frida setup ok');
 }
 
-// 延迟加载
+/**
+ * 延迟加载
+ */
 function awake(): void {
     Interceptor.attach(ptr(0x829ea5a), {
         onEnter: function (args) {},

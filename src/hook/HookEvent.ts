@@ -10,14 +10,21 @@ class _HookEvent {
     // 构造函数，用于初始化对象
     constructor() {}
 
-    // 服务器组包
+    /**
+     * 服务器组包
+     * @returns packet_guard
+     */
     api_PacketGuard_PacketGuard(): any {
         const packet_guard = Memory.alloc(0x20000);
         HookNative.PacketGuard_PacketGuard(packet_guard);
         return packet_guard;
     }
 
-    // 发送字符串给客户端
+    /**
+     * 发送字符串给客户端
+     * @param packet_guard packet_guard
+     * @param s
+     */
     api_InterfacePacketBuf_put_string(packet_guard: any, s: any): void {
         const p = Memory.allocUtf8String(s);
         const len = HookNative.strlen(p);
@@ -26,7 +33,11 @@ class _HookEvent {
         return;
     }
 
-    // 从客户端封包中读取数据(失败会抛异常, 调用方必须做异常处理)
+    /**
+     * 从客户端封包中读取数据(失败会抛异常, 调用方必须做异常处理)
+     * @param packet_buf
+     * @returns data.readU8
+     */
     api_PacketBuf_get_byte(packet_buf: any): any {
         const data = Memory.alloc(1);
         if (HookNative.PacketBuf_get_byte(packet_buf, data)) {
@@ -35,6 +46,10 @@ class _HookEvent {
         throw new Error('PacketBuf_get_byte Fail!');
     }
 
+    /**
+     * @param packet_buf
+     * @returns data.readShort
+     */
     api_PacketBuf_get_short(packet_buf: any): any {
         const data = Memory.alloc(2);
         if (HookNative.PacketBuf_get_short(packet_buf, data)) {
@@ -43,6 +58,10 @@ class _HookEvent {
         throw new Error('PacketBuf_get_short Fail!');
     }
 
+    /**
+     * @param packet_buf
+     * @returns data.readInt
+     */
     api_PacketBuf_get_int(packet_buf: any): any {
         const data = Memory.alloc(4);
         if (HookNative.PacketBuf_get_int(packet_buf, data)) {
@@ -51,7 +70,11 @@ class _HookEvent {
         throw new Error('PacketBuf_get_int Fail!');
     }
 
-    // 世界广播(频道内公告)
+    /**
+     * 世界广播(频道内公告)
+     * @param msg 发送文本
+     * @param msg_type 消息类型 1绿(私聊)/14管理员(喇叭)/16系统消息
+     */
     api_GameWorld_SendNotiPacketMessage(msg: string, msg_type: number): void {
         const packet_guard = this.api_PacketGuard_PacketGuard();
         HookNative.InterfacePacketBuf_put_header(packet_guard, 0, 12);
@@ -64,14 +87,23 @@ class _HookEvent {
         HookNative.Destroy_PacketGuard_PacketGuard(packet_guard);
     }
 
-    // 给角色发消息
+    /**
+     * 给角色发消息
+     * @param user User指针
+     * @param msg 发送文本
+     * @param msg_type 消息类型
+     */
     api_CUser_SendNotiPacketMessage(user: any, msg: string, msg_type: number): void {
         const p = Memory.allocUtf8String(msg);
         HookNative.CUser_SendNotiPacketMessage(user, p, msg_type);
         return;
     }
 
-    // 测试弹窗消息（客户端会崩溃，木青1031插件中修复，未测试）
+    /**
+     * 测试弹窗消息（客户端会崩溃，木青1031插件中修复，未测试）
+     * @param user User指针
+     * @param msg 发送文本
+     */
     SendPacketMessage(user: any, msg: string): void {
         const packet_guard = this.api_PacketGuard_PacketGuard();
         HookNative.InterfacePacketBuf_put_header(packet_guard, 0, 233);
@@ -84,7 +116,11 @@ class _HookEvent {
         HookNative.Destroy_PacketGuard_PacketGuard(packet_guard);
     }
 
-    // 获取角色名字
+    /**
+     * 获取角色名字
+     * @param user User指针
+     * @returns 角色名字
+     */
     api_CUserCharacInfo_getCurCharacName(user: any): any {
         const p = HookNative.CUserCharacInfo_getCurCharacName(user);
         if (p.isNull()) {
@@ -93,7 +129,11 @@ class _HookEvent {
         return p.readUtf8String(-1);
     }
 
-    // 获取道具名字
+    /**
+     * 获取道具名字
+     * @param item_id 道具id
+     * @returns 道具名字
+     */
     api_CItem_GetItemName(item_id: any): any {
         const citem = HookNative.CDataManager_find_item(HookNative.G_CDataManager(), item_id);
         if (!citem.isNull()) {
@@ -102,7 +142,11 @@ class _HookEvent {
         return item_id.toString();
     }
 
-    // 点券充值 (禁止直接修改billing库所有表字段, 点券相关操作务必调用数据库存储过程!)
+    /**
+     * 点券充值 (禁止直接修改billing库所有表字段, 点券相关操作务必调用数据库存储过程!)
+     * @param user User指针
+     * @param amount 点券数量
+     */
     api_recharge_cash_cera(user: any, amount: number): void {
         // 充值
         HookNative.WongWork_IPG_CIPGHelper_IPGInput(
@@ -121,7 +165,11 @@ class _HookEvent {
         HookNative.WongWork_IPG_CIPGHelper_IPGQuery(ptr(0x941f734).readPointer(), user);
     }
 
-    // 代币充值 (禁止直接修改billing库所有表字段, 点券相关操作务必调用数据库存储过程!)
+    /**
+     * 代币充值
+     * @param user User指针
+     * @param amount 代币数量
+     */
     api_recharge_cash_cera_point(user: any, amount: number): void {
         // 充值
         HookNative.WongWork_IPG_CIPGHelper_IPGInputPoint(ptr(0x941f734).readPointer(), user, amount, 4, ptr(0), ptr(0));
@@ -129,6 +177,10 @@ class _HookEvent {
         HookNative.WongWork_IPG_CIPGHelper_IPGQuery(ptr(0x941f734).readPointer(), user);
     }
 
+    /**
+     * hook函数 Interceptor.attach
+     * @param gameEvent hook函数名称
+     */
     hook(gameEvent: string): void {
         const _self = this;
         if (typeof this.eventHandlers[gameEvent] === 'function') {
@@ -139,7 +191,10 @@ class _HookEvent {
         }
     }
 
-    // 打印日志
+    /**
+     * 打印日志
+     * @param args 打印参数
+     */
     logger(...args: any[]): void {
         try {
             console.log(`[${new Date()}][${process.env.loggername}]${args.join('')}`);
@@ -148,7 +203,12 @@ class _HookEvent {
         }
     }
 
-    // 获取随机数
+    /**
+     * 获取随机数
+     * @param min 最小值
+     * @param max 最大值
+     * @returns 返回min与max之间的随机数
+     */
     get_random_int(min: number, max: number): number {
         return Math.floor(Math.random() * (max - min)) + min;
     }

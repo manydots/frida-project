@@ -7,20 +7,23 @@
 -   通过 Babel 转义为 ES5 语法兼容目前的 frida.so 使用，不需要替换so文件
 -   混淆压缩Frida代码
 
--   现有版本frida.so问题: console.log打印中文乱码、拓展方法有些不支持
--   Webpack5、Vite、frida-compile构建方式，有时间研究下
--   本质就是代码兼容转换，不管用什么语法只要转换成低版本语法即可！！！
+-   现有版本frida.so问题: console.log打印中文乱码、拓展方法有些语法不支持
+-   Webpack5、Vite、frida-compile构建方式，有时间再研究下
+-   本质就是代码兼容转换，不管用什么语法只要转换成低版本兼容语法即可！！！
 
--   如果没有以上需要，建议忽略
--   给强迫症吧友一点点启发
+-   **如果没有以上需要，建议忽略！！！**
+-   给有强迫症的吧友一点点启发
 -   需要一点点门槛
--   总结：好像也没有啥用！！！
+-   **总结：好像也没有啥用！！！**
 
 ### 1.资源安装
 
 ```sh
 node -v
+git clone https://github.com/manydots/frida-project.git
+
 cd frida-project
+git pull
 npm install
 ```
 

@@ -35,8 +35,8 @@ const _HookNative = {
     G_GameWorld: new NativeFunction(ptr(0x80da3a7), 'pointer', [], { abi: 'sysv' }),
     GameWorld_IsEnchantRevisionChannel: new NativeFunction(ptr(0x082343fc), 'int', ['pointer'], { abi: 'sysv' }),
 
-    //将协议发给所有在线玩家(慎用! 广播类接口必须限制调用频率, 防止CC攻击)
-    //除非必须使用, 否则改用对象更加明确的CParty::send_to_party/GameWorld::send_to_area
+    // 将协议发给所有在线玩家(慎用! 广播类接口必须限制调用频率, 防止CC攻击)
+    // 除非必须使用, 否则改用对象更加明确的CParty::send_to_party/GameWorld::send_to_area
     GameWorld_send_all: new NativeFunction(ptr(0x86c8c14), 'int', ['pointer', 'pointer'], { abi: 'sysv' }),
     GameWorld_send_all_with_state: new NativeFunction(ptr(0x86c9184), 'int', ['pointer', 'pointer', 'int'], { abi: 'sysv' }),
     stAmplifyOption_t_getAbilityType: new NativeFunction(ptr(0x08150732), 'uint8', ['pointer'], { abi: 'sysv' }),
