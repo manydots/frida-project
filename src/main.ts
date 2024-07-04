@@ -8,7 +8,7 @@ function start(): void {
     gm.logger('=== Frida Start ===');
 
     gm.hook('userLogout'); // 角色登入登出处理
-    gm.hook('historyLog'); // 捕获玩家游戏日志
+    // gm.hook('historyLog'); // 捕获玩家游戏日志
 
     gm.logger('=== Frida End ===');
 }
@@ -32,6 +32,10 @@ function setup(): void {
     if (process.env.is_frida) {
         // 清风85绝对路径 /home/neople/game/frida_config.json
         gm.local_load_config('frida_config.json'); // 相对路径
+        // 初始化数据库
+        gm.api_scheduleOnMainThread(gm.init_db, null);
+        // 挂接消息分发线程 执行需要在主线程运行的代码
+        gm.hook_TimerDispatcher_dispatch();
     }
 
     start(); // frida主功能

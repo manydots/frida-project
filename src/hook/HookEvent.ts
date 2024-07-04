@@ -3,11 +3,40 @@ import hookGameEvent from './HookGameEvent';
 
 // 定义HookEvent类
 class _HookEvent {
+    static readonly INVENTORY_TYPE_BODY: number = 0; // 身上穿的装备
     static readonly INVENTORY_TYPE_ITEM: number = 1; // 物品栏
     static readonly INVENTORY_TYPE_AVARTAR: number = 2; // 时装栏
     private eventHandlers: any = hookGameEvent; // 挂载游戏事件hook
-    global_config: any = {};
-    timer_dispatcher_list: any = []; // 需要在dispatcher线程执行的任务队列(热加载后会被清空)
+
+    // 已打开的数据库句柄
+    public mysql_taiwan_cain: any = null;
+    public mysql_taiwan_cain_2nd: any = null;
+    public mysql_taiwan_billing: any = null;
+    public mysql_frida: any = null;
+
+    public global_config: any = {};
+    public timer_dispatcher_list: any = []; // 需要在dispatcher线程执行的任务队列(热加载后会被清空)
+
+    // 怪物攻城活动当前状态
+    static readonly VILLAGEATTACK_STATE_P1: number = 0; // 一阶段
+    static readonly VILLAGEATTACK_STATE_P2: number = 1; // 二阶段
+    static readonly VILLAGEATTACK_STATE_P3: number = 2; // 三阶段
+    static readonly VILLAGEATTACK_STATE_END: number = 3; // 活动已结束
+
+    // 怪物攻城活动数据
+    public villageAttackEventInfo: any = {
+        state: _HookEvent.VILLAGEATTACK_STATE_END, // 活动当前状态
+        score: 0, //当前阶段频道内总PT
+        start_time: 0, //活动开始时间(UTC)
+        difficult: 0, //活动难度(0-4)
+        next_village_monster_id: 0, //下次刷新的攻城怪物id
+        last_killed_monster_id: 0, //上次击杀的攻城怪物id
+        p2_last_killed_monster_time: 0, //P2阶段上次击杀攻城怪物时间
+        p2_kill_combo: 0, //P2阶段连续击杀相同攻城怪物数量
+        gbl_cnt: 0, //城镇中存活的GBL主教数量
+        defend_success: 0, //怪物攻城活动防守成功
+        user_pt_info: {} //角色个人pt数据
+    };
 
     // 构造函数，用于初始化对象
     constructor() {}
@@ -72,10 +101,11 @@ class _HookEvent {
         throw new Error('PacketBuf_get_int Fail!');
     }
 
+    // 当玩家设置屏蔽或聊天窗口中不显示指定消息类型时，就收不到对应的消息，尽量使用1/14/16这种不会被关闭的类型
     /**
      * 世界广播(频道内公告)
      * @param msg 发送文本
-     * @param msg_type 消息类型 1绿(私聊)/14管理员(喇叭)/16系统消息
+     * @param msg_type 消息类型 1绿(私聊) 2/9蓝(组队) 3/5白(普通)  6粉(公会) 8橙(师徒) 14管理员(喇叭) 16系统消息
      */
     api_GameWorld_SendNotiPacketMessage(msg: string, msg_type: number): void {
         const packet_guard = this.api_PacketGuard_PacketGuard();
@@ -190,17 +220,20 @@ class _HookEvent {
 
     /**
      * 在dispatcher线程执行(args为函数f的参数组成的数组, 若f无参数args可为null)
+     * @param func Function
+     * @param args 参数列表
      */
-    api_scheduleOnMainThread(f: any, args: any): void {
+    api_scheduleOnMainThread(func: Function, args: any): void {
+        let _self = this;
         // 线程安全
         const guard = this.api_Guard_Mutex_Guard();
-        this.timer_dispatcher_list.push([f, args]);
+        this.timer_dispatcher_list.push([func.bind(_self), args]); // 需要bind(this)
         HookNative.Destroy_Guard_Mutex_Guard(guard);
         return;
     }
 
     // 挂接消息分发线程 确保代码线程安全
-    hook_TimerDispatcher_dispatch() {
+    hook_TimerDispatcher_dispatch(): void {
         let _self = this;
         //hook TimerDispatcher::dispatch
         //服务器内置定时器 每秒至少执行一次
@@ -214,7 +247,7 @@ class _HookEvent {
     }
 
     // 处理到期的自定义定时器
-    do_timer_dispatch() {
+    do_timer_dispatch(): void {
         // 当前待处理的定时器任务列表
         let task_list = [];
         // 线程安全
@@ -235,6 +268,73 @@ class _HookEvent {
         }
     }
 
+    // 初始化数据库(打开数据库/建库建表/数据库字段扩展)
+    init_db(): void {
+        // 配置文件
+        const config = this.global_config['db_config'];
+        // 打开数据库连接
+        if (this.mysql_taiwan_cain == null) {
+            this.mysql_taiwan_cain = this.api_MYSQL_open('taiwan_cain', '127.0.0.1', 3306, config['account'], config['password']);
+        }
+        if (this.mysql_taiwan_cain_2nd == null) {
+            this.mysql_taiwan_cain_2nd = this.api_MYSQL_open('taiwan_cain_2nd', '127.0.0.1', 3306, config['account'], config['password']);
+        }
+        if (this.mysql_taiwan_billing == null) {
+            this.mysql_taiwan_billing = this.api_MYSQL_open('taiwan_billing', '127.0.0.1', 3306, config['account'], config['password']);
+        }
+        // 建库frida
+        this.api_MySQL_exec(this.mysql_taiwan_cain, 'create database if not exists frida default charset utf8;');
+        if (this.mysql_frida == null) {
+            this.mysql_frida = this.api_MYSQL_open('frida', '127.0.0.1', 3306, config['account'], config['password']);
+        }
+        // 建表frida.game_event
+        this.api_MySQL_exec(
+            this.mysql_frida,
+            'CREATE TABLE game_event (event_id varchar(30) NOT NULL, event_info mediumtext NULL, PRIMARY KEY (event_id)) ENGINE=InnoDB DEFAULT CHARSET=utf8;'
+        );
+        // 载入活动数据
+        this.event_villageattack_load_from_db();
+    }
+
+    // 从数据库载入怪物攻城活动数据
+    event_villageattack_load_from_db(): void {
+        if (this.api_MySQL_exec(this.mysql_frida, "select event_info from game_event where event_id = 'villageattack';")) {
+            if (HookNative.MySQL_get_n_rows(this.mysql_frida) == 1) {
+                HookNative.MySQL_fetch(this.mysql_frida);
+                const info = this.api_MySQL_get_str(this.mysql_frida, 0);
+                this.villageAttackEventInfo = JSON.parse(info);
+            }
+        }
+    }
+
+    // 关闭数据库（卸载插件前调用）
+    uninit_db(): void {
+        // 活动数据存档
+        this.event_villageattack_save_to_db();
+        // 关闭数据库连接
+        if (this.mysql_taiwan_cain) {
+            HookNative.MySQL_close(this.mysql_taiwan_cain);
+            this.mysql_taiwan_cain = null;
+        }
+        if (this.mysql_taiwan_cain_2nd) {
+            HookNative.MySQL_close(this.mysql_taiwan_cain_2nd);
+            this.mysql_taiwan_cain_2nd = null;
+        }
+        if (this.mysql_taiwan_billing) {
+            HookNative.MySQL_close(this.mysql_taiwan_billing);
+            this.mysql_taiwan_billing = null;
+        }
+        if (this.mysql_frida) {
+            HookNative.MySQL_close(this.mysql_frida);
+            this.mysql_frida = null;
+        }
+    }
+
+    // 怪物攻城活动数据存档
+    event_villageattack_save_to_db(): void {
+        this.api_MySQL_exec(this.mysql_frida, `replace into game_event (event_id, event_info) values ('villageattack', '${JSON.stringify(this.villageAttackEventInfo)}');`);
+    }
+
     /**
      * 申请锁(申请后务必手动释放!!!)
      */
@@ -251,7 +351,25 @@ class _HookEvent {
         setTimeout(this.api_scheduleOnMainThread, delay, f, args);
     }
 
-    //mysql查询(返回mysql句柄)(注意线程安全)
+    // 打开数据库
+    api_MYSQL_open(db_name: string, db_ip: string, db_port: number, db_account: string, db_password: string): any {
+        // mysql初始化
+        const mysql = Memory.alloc(0x80000);
+        HookNative.MySQL_MySQL(mysql);
+        HookNative.MySQL_init(mysql);
+        //连接数据库
+        const db_ip_ptr = Memory.allocUtf8String(db_ip);
+        const db_name_ptr = Memory.allocUtf8String(db_name);
+        const db_account_ptr = Memory.allocUtf8String(db_account);
+        const db_password_ptr = Memory.allocUtf8String(db_password);
+        const ret = HookNative.MySQL_open(mysql, db_ip_ptr, db_port, db_name_ptr, db_account_ptr, db_password_ptr);
+        if (ret) {
+            this.logger(`Connect MYSQL DB <${db_name}> SUCCESS!`);
+            return mysql;
+        }
+        return null;
+    }
+    // mysql查询(返回mysql句柄)(注意线程安全)
     api_MySQL_exec(mysql: any, sql: string): any {
         const sql_ptr = Memory.allocUtf8String(sql);
         HookNative.MySQL_set_query_2(mysql, sql_ptr);
@@ -308,18 +426,6 @@ class _HookEvent {
         //log('api_MySQL_get_binary Fail!!!');
         return null;
     }
-
-    // 从数据库载入怪物攻城活动数据
-    // event_villageattack_load_from_db() {
-    //     let mysql_frida = {a：1}
-    //     if (this.api_MySQL_exec(mysql_frida, "select event_info from game_event where event_id = 'villageattack';")) {
-    //         if (HookNative.MySQL_get_n_rows(mysql_frida) == 1) {
-    //             HookNative.MySQL_fetch(mysql_frida);
-    //             var info = api_MySQL_get_str(mysql_frida, 0);
-    //             villageAttackEventInfo = JSON.parse(info);
-    //         }
-    //     }
-    // }
 
     /**
      * hook函数 Interceptor.attach
@@ -398,7 +504,7 @@ class _HookEvent {
      */
     local_load_config(path: string): void {
         const data = this.local_read_file(path, 'r', 10 * 1024 * 1024);
-        this.global_config = JSON.parse(data);
+        this.global_config = JSON.parse(data ?? '{}');
     }
 
     /**
