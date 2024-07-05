@@ -7,12 +7,12 @@ const _HookGameEvent = {
      */
     userLogout(gm: any): void {
         // 选择角色处理函数
-        Interceptor.attach(ptr(hookType.Reach_GameWord), {
+        Interceptor.attach(ptr(hookType.Reach_GameWorld), {
             // 函数入口, 拿到函数参数args
             onEnter: function (args) {
                 // 保存函数参数
                 this.user = args[1];
-                gm.logger(`[Reach_GameWord][user]${this.user}`);
+                gm.logger(`[Reach_GameWorld][user]${this.user}`);
             },
             // 原函数执行完毕, 这里可以得到并修改返回值retval
             onLeave: function (retval) {
@@ -23,10 +23,10 @@ const _HookGameEvent = {
             }
         });
         // 角色退出处理函数
-        Interceptor.attach(ptr(hookType.Leave_GameWord), {
+        Interceptor.attach(ptr(hookType.Leave_GameWorld), {
             onEnter: function (args) {
                 const user = args[0];
-                gm.logger(`[Leave_GameWord][user]${user}`);
+                gm.logger(`[Leave_GameWorld][user]${user}`);
             },
             onLeave: function (retval) {}
         });

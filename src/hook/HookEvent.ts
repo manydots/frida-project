@@ -43,7 +43,9 @@ class _HookEvent {
     // 私有构造函数，防止外部通过new关键字创建实例
     private constructor() {}
 
-    // 提供一个静态方法用于获取类的唯一实例
+    /**
+     * 获取HookEvent实例(单例模式)
+     */
     static getInstance() {
         if (!_HookEvent.instance) {
             _HookEvent.instance = new _HookEvent();
