@@ -26,12 +26,12 @@ function start(): void {
 function setup(): void {
     if (process.env.is_dp) {
         handler_communication(); // 注册dp通讯
-        // handler_dp('/dp2/frida/frida_config.json'); // 绝对路径 frida连接数据库
+        // handler_frida_db('/dp2/frida/frida_config.json'); // 绝对路径 frida连接数据库
     }
 
     // frida加载本地配置文件
     if (process.env.is_frida) {
-        handler_dp('frida_config.json'); // 相对路径(相对df_game_r) frida连接数据库
+        handler_frida_db('frida_config.json'); // 相对路径(相对df_game_r) frida连接数据库
     }
 
     start(); // frida主功能
@@ -40,9 +40,9 @@ function setup(): void {
 /**
  * frida连接数据库
  */
-function handler_dp(config: string = 'frida_config.json'): void {
+function handler_frida_db(config: string = 'frida_config.json'): void {
     // df_game_r与frida_config.json不在同级时 需要使用绝对路径加载配置文件
-    gm.local_load_config(config); // 相对路径
+    gm.local_load_config(config);
     // 初始化数据库
     gm.api_scheduleOnMainThread(gm.init_db, null);
     // 挂接消息分发线程 执行需要在主线程运行的代码
