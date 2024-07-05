@@ -158,8 +158,16 @@ rpc.exports = {
 #### 2.5 Windows Error: error:0308010C:digital envelope routines::unsupported
 
 ```JavaScript
-// 命令行增加配置
+// Windows 命令行增加配置
 NODE_OPTIONS=--openssl-legacy-provider
+
+// Mac不支持NODE_OPTIONS参数, 以构建dp为例
+// 方式一: 单独定义一个编译命令
+// "dp:mac": "cross-env minimize=true filename=df_game_r.js is_dp=true webpack"
+
+// 方式二: 定义scripts/build.dp.js脚本(不推荐)
+// 脚本内部判断平台类型，拼接命令后通过exec执行
+// "dp:mac:script": "node scripts/build.dp.js"
 ```
 
 #### 3.项目结构
@@ -187,3 +195,10 @@ frida-project
 -   [gadget-linux-x86(\_64).so](https://github.com/frida/frida/releases)
 -   [Node.js](https://nodejs.org/zh-cn/download/prebuilt-installer)
 -   [VSCode](https://code.visualstudio.com/)
+
+#### 5.更新日志
+
+##### 2024-07-05
+
+-   HookEvent Class变更为单例模式
+-   区分构建平台Windows/Mac命令

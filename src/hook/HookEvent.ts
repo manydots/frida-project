@@ -3,6 +3,8 @@ import hookGameEvent from './HookGameEvent';
 
 // 定义HookEvent类
 class _HookEvent {
+    static instance: any = null; // 私有静态属性
+
     static readonly INVENTORY_TYPE_BODY: number = 0; // 身上穿的装备
     static readonly INVENTORY_TYPE_ITEM: number = 1; // 物品栏
     static readonly INVENTORY_TYPE_AVARTAR: number = 2; // 时装栏
@@ -38,8 +40,16 @@ class _HookEvent {
         user_pt_info: {} //角色个人pt数据
     };
 
-    // 构造函数，用于初始化对象
-    constructor() {}
+    // 私有构造函数，防止外部通过new关键字创建实例
+    private constructor() {}
+
+    // 提供一个静态方法用于获取类的唯一实例
+    static getInstance() {
+        if (!_HookEvent.instance) {
+            _HookEvent.instance = new _HookEvent();
+        }
+        return _HookEvent.instance;
+    }
 
     /**
      * 服务器组包
