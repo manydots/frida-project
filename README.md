@@ -170,6 +170,18 @@ NODE_OPTIONS=--openssl-legacy-provider
 // "dp:mac:script": "node scripts/build.dp.js"
 ```
 
+#### 2.6 /filter/records.js为dp2.9的records.lua文件(地址枚举)
+
+```JavaScript
+// test.js为模糊搜索基础符号
+// filter.address.js hook地址拷贝
+// filter.attach.js 为模糊搜索地址Interceptor.attach便于批量测试匹配
+npm run filter
+// 或
+cd ./filter
+node test.js
+```
+
 #### 3.项目结构
 
 frida-project

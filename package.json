@@ -13,7 +13,8 @@
     "vite:dp": "vite build  --mode dp",
     "vite:frida": "vite build  --mode frida",
     "build": "frida-compile ./src/main.ts -o ./dist/Frida.js",
-    "build:min": "frida-compile ./src/main.ts -o ./dist/Frida.js -c"
+    "build:min": "frida-compile ./src/main.ts -o ./dist/Frida.js -c",
+    "filter": "node ./filter/test.js"
   },
   "keywords": [
     "Frida",
