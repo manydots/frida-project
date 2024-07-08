@@ -91,6 +91,17 @@ const _HookNative = {
     // 获取徽章支持的镶嵌槽类型
     CStackableItem_getJewelTargetSocket: new NativeFunction(ptr(0x0822ca28), 'int', ['pointer'], { abi: 'sysv' }),
 
+    CDataManager_find_dungeon: new NativeFunction(ptr(0x0835f9f8), 'pointer', ['pointer', 'int'], { abi: 'sysv' }),
+    // 获取副本名称
+    CDungeon_getDungeonName: new NativeFunction(ptr(0x081455a6), 'pointer', ['pointer'], { abi: 'sysv' }),
+    // 获取副本id
+    CDungeon_get_index: new NativeFunction(ptr(0x080fdcf0), 'int', ['pointer'], {
+        abi: 'sysv'
+    }),
+
+    // 获取当前玩家所在副本
+    getDungeonIdxAfterClear: new NativeFunction(ptr(0x0867cb90), 'int', ['pointer'], { abi: 'sysv' }),
+
     // 获取装备品级 todo 0x80f12d6 ???
     CItem_getRarity: new NativeFunction(ptr(0x080f12d6), 'int', ['pointer'], { abi: 'sysv' }),
     // 获取装备可穿戴等级

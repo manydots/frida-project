@@ -148,12 +148,30 @@ class _HookEvent {
      * @param user User指针
      * @param msg 发送文本
      */
-    SendPacketMessage(user: any, msg: string): void {
+    api_SendPacketMessage(user: any, msg: string): void {
         const packet_guard = this.api_PacketGuard_PacketGuard();
         HookNative.InterfacePacketBuf_put_header(packet_guard, 0, 233);
         HookNative.InterfacePacketBuf_put_byte(packet_guard, 1);
         HookNative.InterfacePacketBuf_put_byte(packet_guard, msg.length);
         this.api_InterfacePacketBuf_put_string(packet_guard, msg);
+
+        HookNative.InterfacePacketBuf_finalize(packet_guard, 1);
+        HookNative.CUser_Send(user, packet_guard);
+        HookNative.Destroy_PacketGuard_PacketGuard(packet_guard);
+    }
+
+    /**
+     * 物品信息弹窗包
+     * @param itemId 物品id
+     */
+    api_SendItemMessage(user: any, itemId: number): void {
+        const packet_guard = this.api_PacketGuard_PacketGuard();
+        HookNative.InterfacePacketBuf_clear(packet_guard);
+        HookNative.InterfacePacketBuf_put_header(packet_guard, 1, 339);
+        HookNative.InterfacePacketBuf_put_byte(packet_guard, 1);
+
+        HookNative.InterfacePacketBuf_put_int(packet_guard, itemId); // 物品id
+        HookNative.InterfacePacketBuf_put_short(packet_guard, 0);
 
         HookNative.InterfacePacketBuf_finalize(packet_guard, 1);
         HookNative.CUser_Send(user, packet_guard);
@@ -171,6 +189,19 @@ class _HookEvent {
             return '';
         }
         return p.readUtf8String(-1);
+    }
+
+    /**
+     * 获取副本名称
+     * @param dungeonId 副本id
+     * @returns 副本名称
+     */
+    api_CDungeon_getDungeonName(dungeonId: any): any {
+        const dungeon = HookNative.CDataManager_find_dungeon(HookNative.G_CDataManager(), dungeonId);
+        if (!dungeon.isNull()) {
+            return HookNative.CDungeon_getDungeonName(dungeon).readUtf8String(-1);
+        }
+        return dungeonId.toString();
     }
 
     /**
@@ -220,15 +251,6 @@ class _HookEvent {
         // 通知客户端充值结果
         HookNative.WongWork_IPG_CIPGHelper_IPGQuery(ptr(0x941f734).readPointer(), user);
     }
-
-    // rarityExtension(): void {
-    //     // CItem::get_rarity(CItem *this)
-    //     Interceptor.attach(ptr(0x080f12d6), {
-    //         onLeave: function (retval) {
-    //             if (retval > 5) retval.replace(3);
-    //         }
-    //     });
-    // }
 
     /**
      * 在dispatcher线程执行(args为函数f的参数组成的数组, 若f无参数args可为null)
@@ -478,6 +500,49 @@ class _HookEvent {
         const second = date.getSeconds().toString();
         // const ms = date.getMilliseconds().toString();
         return `${year}-${month}-${day} ${hour}:${minute}:${second}`;
+    }
+
+    /**
+     * 格式化通关时间
+     * @param value 通关时间(单位:秒)
+     */
+    formatTime(value: number): string {
+        let secondTime = value ?? 0;
+        let minuteTime = 0; // 计算分钟数
+        let hourTime = 0; // 计算小时数
+        if (secondTime >= 60) {
+            minuteTime = Math.floor(secondTime / 60);
+            // 获取秒数，秒数取佘，得到整数秒数
+            secondTime = Math.floor(secondTime % 60);
+            // 如果分钟大于60，将分钟转换成小时
+            if (minuteTime >= 60) {
+                //获取小时，获取分钟除以60，得到整数小时
+                hourTime = Math.floor(minuteTime / 60);
+                //获取小时后取佘的分，获取分钟除以60取佘的分
+                minuteTime = Math.floor(minuteTime % 60);
+            }
+        }
+
+        const timeArr = [hourTime, minuteTime, secondTime];
+        const _indexArr = ['时', '分', '秒'];
+        let _timeArr: (string | number)[] = [];
+        timeArr.forEach((time, index) => {
+            let _time = time <= 9 ? `0${time}` : time;
+            _time = `${_time}${_indexArr[index]}`;
+            // 小时 <0 不拼接
+            if (index == 0 && time > 0) {
+                _timeArr.push(_time);
+            } else if (index > 0) {
+                _timeArr.push(_time);
+            }
+        });
+        return _timeArr.join('');
+
+        // const fmtSecondTime = secondTime <= 9 ? `0${secondTime}` : secondTime;
+        // const fmtMinuteTime = minuteTime <= 9 ? `0${minuteTime}` : minuteTime;
+        // const fmtHourTime = hourTime <= 9 ? `0${hourTime}` : hourTime;
+        // let result = `${fmtHourTime}:${fmtMinuteTime}:${fmtSecondTime}`;
+        // return result;
     }
 
     /**
