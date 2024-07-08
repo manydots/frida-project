@@ -192,6 +192,21 @@ class _HookEvent {
     }
 
     /**
+     * 设置角色虚弱值
+     * @param user User指针
+     * @param stamia 虚弱值0-100
+     */
+    api_setCurCharacStamia(user: any, stamia: any): void {
+        HookNative.CUserCharacInfo_setCurCharacStamia(user, stamia);
+        const packet_guard = this.api_PacketGuard_PacketGuard();
+        HookNative.InterfacePacketBuf_put_header(packet_guard, 0, 33);
+        HookNative.InterfacePacketBuf_put_byte(packet_guard, stamia);
+        HookNative.InterfacePacketBuf_finalize(packet_guard, 1);
+        HookNative.CUser_Send(user, packet_guard);
+        HookNative.Destroy_PacketGuard_PacketGuard(packet_guard);
+    }
+
+    /**
      * 获取副本名称
      * @param dungeonId 副本id
      * @returns 副本名称

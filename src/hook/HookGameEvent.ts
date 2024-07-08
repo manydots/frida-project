@@ -14,6 +14,7 @@ const _HookGameEvent = {
                 this.user = args[1];
                 gm.logger(`[Reach_GameWorld][user]${this.user}`);
                 // gm.api_SendItemMessage(this.user, 3037); // 测试弹窗物品信息 3037无色小晶体
+                // gm.api_setCurCharacStamia(this.user, 50); // 设置角色虚弱值
             },
             // 原函数执行完毕, 这里可以得到并修改返回值retval
             onLeave: function (retval) {

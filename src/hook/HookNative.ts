@@ -68,6 +68,8 @@ const _HookNative = {
     CUserCharacInfo_GetLoginTick: new NativeFunction(ptr(0x822f692), 'int', ['pointer'], { abi: 'sysv' }),
     // 获取角色背包
     CUserCharacInfo_getCurCharacInvenW: new NativeFunction(ptr(0x80da28e), 'pointer', ['pointer'], { abi: 'sysv' }),
+    // 设置角色虚弱值
+    CUserCharacInfo_setCurCharacStamia: new NativeFunction(ptr(0x082f0914), 'int', ['pointer', 'int'], { abi: 'sysv' }),
 
     // 获取背包槽中的道具
     CInventory_GetInvenRef: new NativeFunction(ptr(0x84fc1de), 'pointer', ['pointer', 'int', 'int'], { abi: 'sysv' }),
