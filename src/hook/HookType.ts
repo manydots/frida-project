@@ -13,6 +13,7 @@ import _HookNative from './HookNative'; // hook NativeFunction
  *  @param Dungeon_Clear 副本通关
  *  @param Dungeon_Finish 副本完成(翻牌通关经验奖励)
  *  @param CParty_Get_Item 捡取道具
+ *  @param Unseal_Equipment 魔法封印自动解封/分解时装
  *
  */
 enum _HookType {
@@ -27,7 +28,9 @@ enum _HookType {
     Dungeon_Mob_Die = 0x085b5a4c, // 副本房间怪物死亡
     Dungeon_Clear = 0x085b2412, // 副本通关(会触发2次???)
     Dungeon_Finish = 0x085ad278, // 副本完成(翻牌通关经验奖励)
-    CParty_Get_Item = 0x085b949c // 捡取道具
+    CParty_Get_Item = 0x085b949c, // 捡取道具
+
+    Unseal_Equipment = 0x08502d86 // 魔法封印自动解封/分解时装
 }
 
 export const HookNative = _HookNative;

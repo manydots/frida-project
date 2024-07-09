@@ -24,4 +24,38 @@ enum ExpertJobType {
     DollController = 4 // 控偶师
 }
 
-export { ItemRarity, GlobMask, ExpertJobType };
+// 获取背包槽中的道具
+enum INVENTORY_TYPE {
+    BODY = 0, // 身上穿的装备(0-26)
+    ITEM = 1, // 物品栏(0-311)
+    AVARTAR = 2, // 时装栏(0-104)
+    CREATURE = 3 // 宠物装备(0-241)
+}
+
+// 通知客户端更新背包栏
+enum ENUM_ITEMSPACE {
+    INVENTORY = 0, // 物品栏
+    AVATAR = 1, // 时装栏
+    CARGO = 2, // 仓库
+    CREATURE = 7, // 宠物栏
+    ACCOUNT_CARGO = 12 // 账号仓库
+}
+
+// 完成角色当前可接的所有任务(仅发送金币/经验/QP等基础奖励 无道具奖励)
+enum QUEST_gRADE {
+    COMMON_UNIQUE = 5, //任务脚本中[grade]字段对应的常量定义 可以在importQuestScript函数中找到
+    NORMALY_REPEAT = 4, //可重复提交的重复任务
+    DAILY = 3, //每日任务
+    EPIC = 0, //史诗任务
+    ACHIEVEMENT = 2 //史诗任务
+}
+
+// 怪物攻城活动当前状态
+enum VILLAGEATTACK_STATE {
+    P1 = 0, // 一阶段
+    P2 = 1, // 二阶段
+    P3 = 2, // 三阶段
+    END = 3 // 活动已结束
+}
+
+export { ItemRarity, GlobMask, ExpertJobType, INVENTORY_TYPE, ENUM_ITEMSPACE, QUEST_gRADE, VILLAGEATTACK_STATE };

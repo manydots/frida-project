@@ -182,6 +182,14 @@ cd ./filter
 node test.js
 ```
 
+#### 2.7 Frida-Gadget ES6问题(64位系统也需要使用frida-gadget-x-linux-x86.so版本)
+
+```JavaScript
+// Frida12 不支持
+// Frida16 支持(frida-gadget-16.4.2-linux-x86.so已测试，可配合升级Webpack5、Vite构建)
+// Webpack5 构建后会包裹箭头函数
+```
+
 #### 3.项目结构
 
 frida-project

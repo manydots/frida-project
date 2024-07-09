@@ -10,6 +10,7 @@ function start(): void {
     echoVersion(); // Frida.version
     // gm.hook('historyLog'); // 捕获玩家游戏日志
     gm.hook('userLogout'); // 角色登入登出处理
+    gm.hook('autoUnsealEquipment'); // 魔法封印自动解封/分解时装 辅助检查CParty_Item_Slot
     gm.hook('CPartyGetPlayTick'); // 获取副本通关时长
     gm.hook('CPartyGetItem'); // 副本获取道具
     // gm.hook('debugCode'); // 测试代码
@@ -28,6 +29,8 @@ function start(): void {
  * 准备工作
  */
 function setup(): void {
+    Interceptor.flush();
+
     if (process.env.is_dp) {
         handler_communication(); // 注册dp通讯
         // handler_frida_db('/dp2/frida/frida_config.json'); // 绝对路径 frida连接数据库
@@ -45,10 +48,10 @@ function setup(): void {
  * Frida.version版本
  */
 function echoVersion(): void {
-    // var base_address = ptr(0x1ac790c);
-    // var offset = 0x258;
-    // var target_address = base_address.add(offset);
-    gm.logger(Frida.version);
+    // const base_address = ptr(0x1ac790c);
+    // const offset = 0x258;
+    // const target_address = base_address.add(offset);
+    gm.logger('[version]', Frida.version);
 }
 
 /**
@@ -156,6 +159,7 @@ rpc.exports = {
         }
     },
     dispose: function () {
+        gm.uninit_db(); // 关闭数据库连接
         gm.logger('=== frida dispose ===');
     }
 };

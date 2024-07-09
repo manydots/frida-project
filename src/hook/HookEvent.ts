@@ -1,13 +1,10 @@
 import { HookNative } from './HookType';
+import { VILLAGEATTACK_STATE } from '../enum/enum';
 import hookGameEvent from './HookGameEvent';
 
 // 定义HookEvent类
 class _HookEvent {
     static instance: any = null; // 私有静态属性
-
-    static readonly INVENTORY_TYPE_BODY: number = 0; // 身上穿的装备
-    static readonly INVENTORY_TYPE_ITEM: number = 1; // 物品栏
-    static readonly INVENTORY_TYPE_AVARTAR: number = 2; // 时装栏
     private eventHandlers: any = hookGameEvent; // 挂载游戏事件hook
 
     // 已打开的数据库句柄
@@ -19,15 +16,9 @@ class _HookEvent {
     public global_config: any = {};
     public timer_dispatcher_list: any = []; // 需要在dispatcher线程执行的任务队列(热加载后会被清空)
 
-    // 怪物攻城活动当前状态
-    static readonly VILLAGEATTACK_STATE_P1: number = 0; // 一阶段
-    static readonly VILLAGEATTACK_STATE_P2: number = 1; // 二阶段
-    static readonly VILLAGEATTACK_STATE_P3: number = 2; // 三阶段
-    static readonly VILLAGEATTACK_STATE_END: number = 3; // 活动已结束
-
     // 怪物攻城活动数据
     public villageAttackEventInfo: any = {
-        state: _HookEvent.VILLAGEATTACK_STATE_END, // 活动当前状态
+        state: VILLAGEATTACK_STATE.END, // 活动当前状态
         score: 0, //当前阶段频道内总PT
         start_time: 0, //活动开始时间(UTC)
         difficult: 0, //活动难度(0-4)
@@ -179,6 +170,14 @@ class _HookEvent {
     }
 
     /**
+     * @returns 获取当前频道名
+     */
+    api_CEnvironment_get_file_name(): any {
+        var filename = HookNative.CEnvironment_get_file_name(HookNative.G_CEnvironment());
+        return filename?.readUtf8String(-1);
+    }
+
+    /**
      * 获取角色名字
      * @param user User指针
      * @returns 角色名字
@@ -207,6 +206,93 @@ class _HookEvent {
     }
 
     /**
+     * 给角色发送邮件
+     * @param charac_no 角色id
+     * @param title 邮件标题
+     * @param text 邮件正文
+     * @param gold 金钱
+     * @param item_list 物品列表
+     */
+    api_WongWork_SendMail(charac_no: number, item_list: any, title: string = '风一样的勇士', text: string = '邮件奖励:', gold: number = 0): void {
+        // 添加道具附件
+        const vector = Memory.alloc(100);
+        HookNative.std_pair_vector(vector);
+        HookNative.std_pair_clear(vector);
+        for (let i = 0; i < item_list.length; ++i) {
+            const item_id = Memory.alloc(4); // 道具id
+            const item_cnt = Memory.alloc(4); // 道具数量
+            item_id.writeInt(item_list[i][0]);
+            item_cnt.writeInt(item_list[i][1]);
+            const pair = Memory.alloc(100);
+            HookNative.std_pair_make(pair, item_id, item_cnt);
+            HookNative.std_pair_push_back(vector, pair);
+        }
+        // 邮件支持10个道具附件格子
+        const addition_slots = Memory.alloc(1000);
+        for (let i = 0; i < 10; ++i) {
+            HookNative.Inven_Item(addition_slots.add(i * 61));
+        }
+        HookNative.WongWork_CMailBoxHelper_MakeSystemMultiMailPostal(vector, addition_slots, 10);
+        const title_ptr = Memory.allocUtf8String(title); // 邮件标题
+        const text_ptr = Memory.allocUtf8String(text); // 邮件正文
+        const text_len = HookNative.strlen(text_ptr); // 邮件正文长度
+        // 发邮件给角色
+        HookNative.WongWork_CMailBoxHelper_ReqDBSendNewSystemMultiMail(title_ptr, addition_slots, item_list.length, gold, charac_no, text_ptr, text_len, 0, 99, 1);
+    }
+
+    /**
+     * 给角色发经验
+     * @param user User指针
+     * @param exp 经验值
+     */
+    api_CUser_gain_exp_sp(user: any, exp: number): void {
+        const a2 = Memory.alloc(4);
+        const a3 = Memory.alloc(4);
+        HookNative.CUser_gain_exp_sp(user, exp, a2, a3, 0, 0, 0);
+    }
+
+    /**
+     * 给角色发道具
+     * @param user User指针
+     * @param item_id 物品id
+     * @param item_cnt 发送的物品数量
+     */
+    api_CUser_AddItem(user: any, item_id: number, item_cnt: number): void {
+        const item_space = Memory.alloc(4);
+        const slot = HookNative.CUser_AddItem(user, item_id, item_cnt, 6, item_space, 0);
+        if (slot >= 0) {
+            // console.log(slot);
+            // 通知客户端有游戏道具更新
+            HookNative.CUser_SendUpdateItemList(user, 1, item_space.readInt(), slot);
+        }
+    }
+
+    /**
+     * 获取道具数据
+     * @param item_id 物品id
+     * @param item_cnt 发送的物品数量
+     */
+    find_item(item_id: number): any {
+        return HookNative.CDataManager_find_item(HookNative.G_CDataManager(), item_id);
+    }
+
+    /**
+     * 获取背包中指定道具数量
+     * @param user User指针
+     * @param item_id 物品id
+     * @returns 道具数量
+     */
+    api_getItemCount(user: any, itemid: number): number {
+        if (!itemid) return 0;
+        const inven = HookNative.CUserCharacInfo_getCurCharacInvenW(user); // 获取角色背包
+        const itemAddr = Memory.alloc(116);
+        const invenData = HookNative.CInventory_GetInvenData(inven, itemid, itemAddr);
+        if (invenData < 0) return 0;
+        const count = itemAddr.add(7).readU16();
+        return count;
+    }
+
+    /**
      * 获取副本名称
      * @param dungeonId 副本id
      * @returns 副本名称
@@ -224,10 +310,10 @@ class _HookEvent {
      * @param item_id 道具id
      * @returns 道具名字
      */
-    api_CItem_GetItemName(item_id: any): any {
+    api_CItem_getItemName(item_id: any): any {
         const citem = HookNative.CDataManager_find_item(HookNative.G_CDataManager(), item_id);
         if (!citem.isNull()) {
-            return HookNative.CItem_GetItemName(citem).readUtf8String(-1);
+            return HookNative.CItem_getItemName(citem).readUtf8String(-1);
         }
         return item_id.toString();
     }
@@ -276,7 +362,7 @@ class _HookEvent {
         let _self = this;
         // 线程安全
         const guard = this.api_Guard_Mutex_Guard();
-        this.timer_dispatcher_list.push([func.bind(_self), args]); // 需要bind(this)
+        this.timer_dispatcher_list.push([func.bind(_self), args]); // 改变this指向
         HookNative.Destroy_Guard_Mutex_Guard(guard);
         return;
     }
@@ -284,12 +370,12 @@ class _HookEvent {
     // 挂接消息分发线程 确保代码线程安全
     hook_TimerDispatcher_dispatch(): void {
         let _self = this;
-        //hook TimerDispatcher::dispatch
-        //服务器内置定时器 每秒至少执行一次
+        // hook TimerDispatcher::dispatch
+        // 服务器内置定时器 每秒至少执行一次
         Interceptor.attach(ptr(0x8632a18), {
             onEnter: function (args) {},
             onLeave: function (retval) {
-                //清空等待执行的任务队列
+                // 清空等待执行的任务队列
                 _self.do_timer_dispatch();
             }
         });
@@ -497,7 +583,7 @@ class _HookEvent {
      */
     logger(...args: any[]): void {
         try {
-            console.log(`[${new Date()}][${process.env.loggername}]${args.join('')}`);
+            console.log(`[${this.get_timestamp()}][${process.env.loggername}]${args.join('')}`);
         } catch (e: any) {
             console.error(e);
         }
@@ -507,14 +593,27 @@ class _HookEvent {
     get_timestamp(): string {
         let date = new Date();
         date = new Date(date.setHours(date.getHours())); // 转换到本地时间
-        const year = date.getFullYear().toString();
-        const month = (date.getMonth() + 1).toString();
-        const day = date.getDate().toString();
-        const hour = date.getHours().toString();
-        const minute = date.getMinutes().toString();
-        const second = date.getSeconds().toString();
-        // const ms = date.getMilliseconds().toString();
-        return `${year}-${month}-${day} ${hour}:${minute}:${second}`;
+        const year = date.getFullYear();
+        const month = date.getMonth() + 1;
+        const day = date.getDate();
+        const hour = date.getHours();
+        const minute = date.getMinutes();
+        const second = date.getSeconds();
+        const ms = date.getMilliseconds();
+        const dateArr = [year, month, day];
+        let _dateArr: (number | string)[] = [];
+        dateArr.forEach((time) => {
+            let _time = time <= 9 ? `0${time}` : time;
+            _dateArr.push(_time);
+        });
+
+        const timeArr = [hour, minute, second];
+        let _timeArr: (number | string)[] = [];
+        timeArr.forEach((time) => {
+            let _time = time <= 9 ? `0${time}` : time;
+            _timeArr.push(_time);
+        });
+        return `${_dateArr.join('-')} ${_timeArr.join(':')}.${ms}`;
     }
 
     /**
@@ -601,7 +700,7 @@ class _HookEvent {
 
     /**
      * 获取系统UTC时间(秒)
-     * @param path 文件路径
+     * @returns 系统UTC时间(秒)
      */
     local_getSysUTCSec() {
         return HookNative.GlobalData_systemTime.readInt();

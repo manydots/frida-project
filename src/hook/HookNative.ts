@@ -34,6 +34,27 @@ const _HookNative = {
     // 获取GameWorld实例
     G_GameWorld: new NativeFunction(ptr(0x80da3a7), 'pointer', [], { abi: 'sysv' }),
     GameWorld_IsEnchantRevisionChannel: new NativeFunction(ptr(0x082343fc), 'int', ['pointer'], { abi: 'sysv' }),
+    // 服务器环境
+    G_CEnvironment: new NativeFunction(ptr(0x080cc181), 'pointer', [], { abi: 'sysv' }),
+    // 获取当前服务器配置文件名
+    CEnvironment_get_file_name: new NativeFunction(ptr(0x80da39a), 'pointer', ['pointer'], { abi: 'sysv' }),
+
+    // 背包道具
+    Inven_Item: new NativeFunction(ptr(0x80cb854), 'pointer', ['pointer'], { abi: 'sysv' }),
+    std_pair_vector: new NativeFunction(ptr(0x81349d6), 'pointer', ['pointer'], { abi: 'sysv' }),
+    std_pair_clear: new NativeFunction(ptr(0x817a342), 'pointer', ['pointer'], { abi: 'sysv' }),
+    std_pair_make: new NativeFunction(ptr(0x81b8d41), 'pointer', ['pointer', 'pointer', 'pointer'], { abi: 'sysv' }),
+    std_pair_push_back: new NativeFunction(ptr(0x80dd606), 'pointer', ['pointer', 'pointer'], { abi: 'sysv' }),
+
+    WongWork_CMailBoxHelper_ReqDBSendNewSystemMultiMail: new NativeFunction(
+        ptr(0x8556b68),
+        'int',
+        ['pointer', 'pointer', 'int', 'int', 'int', 'pointer', 'int', 'int', 'int', 'int'],
+        { abi: 'sysv' }
+    ),
+    WongWork_CMailBoxHelper_MakeSystemMultiMailPostal: new NativeFunction(ptr(0x8556a14), 'int', ['pointer', 'pointer', 'int'], { abi: 'sysv' }),
+    // 城镇瞬移
+    GameWorld_move_area: new NativeFunction(ptr(0x86c5a84), 'pointer', ['pointer', 'pointer', 'int', 'int', 'int', 'int', 'int', 'int', 'int', 'int', 'int'], { abi: 'sysv' }),
 
     // 将协议发给所有在线玩家(慎用! 广播类接口必须限制调用频率, 防止CC攻击)
     // 除非必须使用, 否则改用对象更加明确的CParty::send_to_party/GameWorld::send_to_area
@@ -70,6 +91,26 @@ const _HookNative = {
     CUserCharacInfo_getCurCharacInvenW: new NativeFunction(ptr(0x80da28e), 'pointer', ['pointer'], { abi: 'sysv' }),
     // 设置角色虚弱值
     CUserCharacInfo_setCurCharacStamia: new NativeFunction(ptr(0x082f0914), 'int', ['pointer', 'int'], { abi: 'sysv' }),
+    // 获取当前玩家所在副本
+    getDungeonIdxAfterClear: new NativeFunction(ptr(0x0867cb90), 'int', ['pointer'], { abi: 'sysv' }),
+    // 获取角色所在队伍
+    CUser_GetParty: new NativeFunction(ptr(0x0865514c), 'pointer', ['pointer'], { abi: 'sysv' }),
+    // 获取角色上次退出游戏时间
+    CUserCharacInfo_getCurCharacLastPlayTick: new NativeFunction(ptr(0x82a66aa), 'int', ['pointer'], { abi: 'sysv' }),
+    // 获取角色等级
+    CUserCharacInfo_get_charac_level: new NativeFunction(ptr(0x80da2b8), 'int', ['pointer'], { abi: 'sysv' }),
+    // 获取角色当前等级升级所需经验
+    CUserCharacInfo_get_level_up_exp: new NativeFunction(ptr(0x0864e3ba), 'int', ['pointer', 'int'], { abi: 'sysv' }),
+    // 角色增加经验
+    CUser_gain_exp_sp: new NativeFunction(ptr(0x866a3fe), 'int', ['pointer', 'int', 'pointer', 'pointer', 'int', 'int', 'int'], { abi: 'sysv' }),
+    // 发送道具
+    CUser_AddItem: new NativeFunction(ptr(0x867b6d4), 'int', ['pointer', 'int', 'int', 'int', 'pointer', 'int'], { abi: 'sysv' }),
+    // 减少金币
+    CInventory_use_money: new NativeFunction(ptr(0x84ff54c), 'int', ['pointer', 'int', 'int', 'int'], { abi: 'sysv' }),
+    // 增加金币
+    CInventory_gain_money: new NativeFunction(ptr(0x84ff29c), 'int', ['pointer', 'int', 'int', 'int', 'int'], { abi: 'sysv' }),
+    // 获取角色当前持有金币数量
+    CInventory_get_money: new NativeFunction(ptr(0x81347d6), 'int', ['pointer'], { abi: 'sysv' }),
 
     // 获取背包槽中的道具
     CInventory_GetInvenRef: new NativeFunction(ptr(0x84fc1de), 'pointer', ['pointer', 'int', 'int'], { abi: 'sysv' }),
@@ -97,26 +138,35 @@ const _HookNative = {
     // 获取副本名称
     CDungeon_getDungeonName: new NativeFunction(ptr(0x081455a6), 'pointer', ['pointer'], { abi: 'sysv' }),
     // 获取副本id
-    CDungeon_get_index: new NativeFunction(ptr(0x080fdcf0), 'int', ['pointer'], {
-        abi: 'sysv'
-    }),
+    CDungeon_get_index: new NativeFunction(ptr(0x080fdcf0), 'int', ['pointer'], { abi: 'sysv' }),
 
-    // 获取当前玩家所在副本
-    getDungeonIdxAfterClear: new NativeFunction(ptr(0x0867cb90), 'int', ['pointer'], { abi: 'sysv' }),
+    // 通知客户端道具更新(客户端指针, 通知方式[仅客户端=1, 世界广播=0, 小队=2, war room=3], itemSpace[装备=0, 时装=1], 道具所在的背包槽)
+    CUser_SendUpdateItemList: new NativeFunction(ptr(0x867c65a), 'int', ['pointer', 'int', 'int', 'int'], { abi: 'sysv' }),
 
-    // 获取装备品级 todo 0x80f12d6 ???
+    // 获取队伍中玩家
+    CParty_get_user: new NativeFunction(ptr(0x08145764), 'pointer', ['pointer', 'int'], { abi: 'sysv' }),
+    CParty_send_to_party: new NativeFunction(ptr(0x0859d14e), 'int', ['pointer', 'pointer'], { abi: 'sysv' }),
+    // 修复金币异常
+    CParty_UseAncientDungeonItems: new NativeFunction(ptr(0x859eac2), 'int', ['pointer', 'pointer', 'pointer', 'pointer'], { abi: 'sysv' }),
+
+    // 获取装备品级
     CItem_getRarity: new NativeFunction(ptr(0x080f12d6), 'int', ['pointer'], { abi: 'sysv' }),
     // 获取装备可穿戴等级
     CItem_getUsableLevel: new NativeFunction(ptr(0x80f12ee), 'int', ['pointer'], { abi: 'sysv' }),
+    CItem_getAttachType: new NativeFunction(ptr(0x80f12e2), 'int', ['pointer'], { abi: 'sysv' }),
     // 获取道具名
-    CItem_GetItemName: new NativeFunction(ptr(0x811ed82), 'pointer', ['pointer'], { abi: 'sysv' }),
+    CItem_getItemName: new NativeFunction(ptr(0x811ed82), 'pointer', ['pointer'], { abi: 'sysv' }),
+
+    // 获取装备耐久
+    CEquipItem_get_endurance: new NativeFunction(ptr(0x811ed98), 'int', ['pointer'], { abi: 'sysv' }),
+    CInventory_GetInvenData: new NativeFunction(ptr(0x084fbf2c), 'int', ['pointer', 'int', 'pointer'], { abi: 'sysv' }),
+    CUserCharacInfo_getCurCharacInvenR: new NativeFunction(ptr(0x80da27e), 'pointer', ['pointer'], { abi: 'sysv' }),
+    CInventory_get_empty_slot: new NativeFunction(ptr(0x84fb824), 'int', ['pointer', 'int', 'int'], { abi: 'sysv' }),
 
     // 时装镶嵌数据存盘
     DB_UpdateAvatarJewelSlot_makeRequest: new NativeFunction(ptr(0x843081c), 'pointer', ['int', 'int', 'pointer'], { abi: 'sysv' }),
     // 发包给客户端
     CUser_Send: new NativeFunction(ptr(0x86485ba), 'int', ['pointer', 'pointer'], { abi: 'sysv' }),
-    // 通知客户端道具更新(客户端指针, 通知方式[仅客户端=1, 世界广播=0, 小队=2, war room=3], itemSpace[装备=0, 时装=1], 道具所在的背包槽)
-    CUser_SendUpdateItemList: new NativeFunction(ptr(0x867c65a), 'int', ['pointer', 'int', 'int', 'int'], { abi: 'sysv' }),
 
     // 测试系统API
     strlen1: new NativeFunction(ptr(0x0807e3b0), 'int', ['pointer'], { abi: 'sysv' }),
