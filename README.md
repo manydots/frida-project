@@ -167,7 +167,7 @@ NODE_OPTIONS=--openssl-legacy-provider
 
 // 方式二: 定义scripts/build.dp.js脚本(不推荐)
 // 脚本内部判断平台类型，拼接命令后通过exec执行
-// "dp:mac:script": "node scripts/build.dp.js"
+// "dp:script": "node scripts/build.dp.js"
 ```
 
 #### 2.6 /filter/records.js为dp2.9的records.lua文件(地址枚举)
