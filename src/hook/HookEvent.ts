@@ -104,6 +104,26 @@ class _HookEvent {
         throw new Error('PacketBuf_get_int Fail!');
     }
 
+    /**
+     * @param packet_buf
+     * @returns data.readByteArray
+     */
+    api_PacketBuf_get_binary(packet_buf: any, len: number): any {
+        const data = Memory.alloc(len);
+        if (HookNative.PacketBuf_get_binary(packet_buf, data, len)) {
+            return data.readByteArray(len);
+        }
+        throw new Error('PacketBuf_get_binary Fail!');
+    }
+
+    /**
+     * 获取原始封包数据
+     * @param packet_buf
+     */
+    api_PacketBuf_get_buf(packet_buf: any): any {
+        return packet_buf.add(20).readPointer().add(13);
+    }
+
     // 当玩家设置屏蔽或聊天窗口中不显示指定消息类型时，就收不到对应的消息，尽量使用1/14/16这种不会被关闭的类型
     /**
      * 世界广播(频道内公告)
@@ -170,7 +190,7 @@ class _HookEvent {
     }
 
     /**
-     * @returns 获取当前频道名
+     * @returns 获取当前频道文件名
      */
     api_CEnvironment_get_file_name(): any {
         var filename = HookNative.CEnvironment_get_file_name(HookNative.G_CEnvironment());
@@ -208,12 +228,12 @@ class _HookEvent {
     /**
      * 给角色发送邮件
      * @param charac_no 角色id
-     * @param title 邮件标题
+     * @param title 邮件标题(发件人名称)
      * @param text 邮件正文
      * @param gold 金钱
      * @param item_list 物品列表
      */
-    api_WongWork_SendMail(charac_no: number, item_list: any, title: string = '风一样的勇士', text: string = '邮件奖励:', gold: number = 0): void {
+    api_WongWork_SendMail(charac_no: number, item_list: any, title: string = 'DNF管理员', text: string = '非常感谢您的支持！', gold: number = 0): void {
         // 添加道具附件
         const vector = Memory.alloc(100);
         HookNative.std_pair_vector(vector);
@@ -270,7 +290,6 @@ class _HookEvent {
     /**
      * 获取道具数据
      * @param item_id 物品id
-     * @param item_cnt 发送的物品数量
      */
     find_item(item_id: number): any {
         return HookNative.CDataManager_find_item(HookNative.G_CDataManager(), item_id);
@@ -288,7 +307,7 @@ class _HookEvent {
         const itemAddr = Memory.alloc(116);
         const invenData = HookNative.CInventory_GetInvenData(inven, itemid, itemAddr);
         if (invenData < 0) return 0;
-        const count = itemAddr.add(7).readU16();
+        const count = itemAddr.add(7).readU32(); // readU16 最大值65535
         return count;
     }
 
@@ -314,6 +333,28 @@ class _HookEvent {
         const citem = HookNative.CDataManager_find_item(HookNative.G_CDataManager(), item_id);
         if (!citem.isNull()) {
             return HookNative.CItem_getItemName(citem).readUtf8String(-1);
+        }
+        return item_id.toString();
+    }
+
+    /**
+     * 获取道具详情
+     * @param item_id 道具id
+     * @returns 道具详情
+     */
+    api_CItem_getItemDetail(item_id?: any, CItem?: any): any {
+        CItem = !CItem ? this.find_item(item_id) : CItem;
+        if (!CItem.isNull()) {
+            return {
+                name: HookNative.CItem_getItemName(CItem).readUtf8String(-1),
+                rarity: HookNative.CItem_getRarity(CItem),
+                grade: HookNative.CItem_GetGrade(CItem),
+                itemId: HookNative.Inven_Item_getKey(CItem),
+                index: HookNative.CItem_GetIndex(CItem),
+                price: HookNative.CItem_GetPrice(CItem),
+                groupName: HookNative.CItem_GetItemGroupName(CItem),
+                genRate: HookNative.CItem_GetGenRate(CItem)
+            };
         }
         return item_id.toString();
     }
@@ -565,11 +606,12 @@ class _HookEvent {
     /**
      * hook函数 Interceptor.attach
      * @param gameEvent hook函数名称
+     * @param params 拓展参数
      */
-    hook(gameEvent: string): void {
+    hook(gameEvent: string, params?: object): void {
         const _self = this;
         if (typeof this.eventHandlers[gameEvent] === 'function') {
-            this.eventHandlers[gameEvent](_self);
+            this.eventHandlers[gameEvent](_self, params ?? {});
             this.logger(`[hook][${gameEvent}]`);
         } else {
             console.error(`No handler found for event: ${gameEvent}`);
@@ -667,6 +709,16 @@ class _HookEvent {
      */
     get_random_int(min: number, max: number): number {
         return Math.floor(Math.random() * (max - min)) + min;
+    }
+
+    /**
+     * Frida.version版本
+     */
+    echoVersion(): void {
+        // const base_address = ptr(0x1ac790c);
+        // const offset = 0x258;
+        // const target_address = base_address.add(offset);
+        this.logger('[version]', Frida.version);
     }
 
     /**

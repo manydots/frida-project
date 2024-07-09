@@ -14,6 +14,7 @@ import _HookNative from './HookNative'; // hook NativeFunction
  *  @param Dungeon_Finish 副本完成(翻牌通关经验奖励)
  *  @param CParty_Get_Item 捡取道具
  *  @param Unseal_Equipment 魔法封印自动解封/分解时装
+ *  @param GmInput 玩家指令监听
  *
  */
 enum _HookType {
@@ -30,6 +31,7 @@ enum _HookType {
     Dungeon_Finish = 0x085ad278, // 副本完成(翻牌通关经验奖励)
     CParty_Get_Item = 0x085b949c, // 捡取道具
 
+    GmInput = 0x0820bbde, // 玩家指令监听
     Unseal_Equipment = 0x08502d86 // 魔法封印自动解封/分解时装
 }
 

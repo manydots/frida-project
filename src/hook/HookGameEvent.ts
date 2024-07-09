@@ -1,5 +1,9 @@
 import hookType, { HookNative } from './HookType';
-import { INVENTORY_TYPE } from '../enum/enum';
+import { INVENTORY_TYPE, ENUM_ITEMSPACE } from '../enum/enum';
+
+interface Params {
+    repair?: boolean; // 是否自动修理
+}
 
 const _HookGameEvent = {
     /**
@@ -14,15 +18,19 @@ const _HookGameEvent = {
                 // 保存函数参数
                 this.user = args[1];
                 gm.logger(`[Reach_GameWorld][user]${this.user}`);
-                // gm.api_SendItemMessage(this.user, 3037); // 测试弹窗物品信息 3037无色小晶体
-                // gm.api_setCurCharacStamia(this.user, 50); // 设置角色虚弱值
             },
             // 原函数执行完毕, 这里可以得到并修改返回值retval
             onLeave: function (retval) {
                 // 发送频道消息
-                gm.api_GameWorld_SendNotiPacketMessage(`玩家【${gm.api_CUserCharacInfo_getCurCharacName(this.user)}】上线了`, 14);
-                // 给角色发问候消息
-                // gm.api_CUser_SendNotiPacketMessage(this.user, `Hello ${gm.api_CUserCharacInfo_getCurCharacName(this.user)}`, 2);
+                gm.api_GameWorld_SendNotiPacketMessage(`玩家[${gm.api_CUserCharacInfo_getCurCharacName(this.user)}]上线了`, 14);
+
+                // gm.api_CUser_SendNotiPacketMessage(this.user, `Hello ${gm.api_CUserCharacInfo_getCurCharacName(this.user)}`, 2); // 给角色发问候消息
+                // gm.api_SendItemMessage(this.user, 3037); // 测试弹窗物品信息 3037无色小晶体
+                // gm.api_setCurCharacStamia(this.user, 50); // 设置角色虚弱值
+                // gm.api_CUser_AddItem(this.user, 3037, 10); // 给角色发道具/api_WongWork_SendMail发送邮件
+                // gm.api_CUser_gain_exp_sp(this.user, 10000); // 给角色发经验
+                // gm.logger(gm.api_CEnvironment_get_file_name()); // 获取当前频道文件名
+                // gm.logger(gm.api_getItemCount(this.user, 3037)); // 获取背包中指定道具数量
             }
         });
         // 角色退出处理函数
@@ -89,7 +97,7 @@ const _HookGameEvent = {
                 if (!user_map_obj[characNo]) {
                     user_map_obj[characNo] = {};
                 }
-                user_map_obj.cparty_item_slot = slot;
+                user_map_obj[characNo].cparty_item_slot = slot;
                 gm.logger('[CParty_Item_Slot]', slot);
             }
         });
@@ -130,7 +138,7 @@ const _HookGameEvent = {
                 const ItemRarity = HookNative.CItem_getRarity(itemData); // 稀有度
                 // 装备数量不可以通过 num 获取
                 gm.logger('ItemRarity', ItemRarity);
-                if (ItemRarity >= 3) {
+                if (ItemRarity >= 2) {
                     gm.api_GameWorld_SendNotiPacketMessage(`恭喜「${charac_name}」捡起了传说中的[${item_name}]${num}个`, 14);
                 }
             },
@@ -141,8 +149,10 @@ const _HookGameEvent = {
      * 获取副本通关时长
      * @param gm HookEvent实例
      **/
-    CPartyGetPlayTick(gm: any): void {
+    CPartyGetPlayTick(gm: any, params?: Params): void {
         const user_map_obj = this.user_map_obj as any;
+        const autoRepair = params?.repair ?? false;
+        const _self = this;
 
         // 选择副本难度时, 获取难度参数
         // Interceptor.attach(ptr(hookType.Dungeon_Difficult), {
@@ -162,6 +172,11 @@ const _HookGameEvent = {
                 }
                 user_map_obj[characNo].startTime = gm.local_getSysUTCSec();
                 gm.logger(`[Dungeon_Start]${[this.user]}`);
+
+                // 开启自动修理
+                if (autoRepair) {
+                    _self.autoRepairEqu(gm, this.user);
+                }
             }
         });
 
@@ -212,12 +227,72 @@ const _HookGameEvent = {
             }
         });
     },
+    /**
+     * 玩家指令监听
+     * @param gm HookEvent实例
+     **/
+    GmInput(gm: any): void {
+        // HOOK Dispatcher_New_Gmdebug_Command::dispatch_sig
+        const _self = this;
+        const pattern = /\/\/\s*?use\s+(\d+)\s*?/; // //use 1234
+        const showEqu = /\/\/\s*?show\s+([a-zA-Z]+)\s*?/; // //use 1234
 
+        Interceptor.attach(ptr(hookType.GmInput), {
+            onEnter: function (args) {
+                const user = args[1];
+                // 获取原始封包数据
+                const raw_packet_buf = gm.api_PacketBuf_get_buf(args[2]);
+                // 解析GM DEBUG命令
+                const gm_len = raw_packet_buf.readInt();
+                const gm_text = raw_packet_buf.add(4).readUtf8String(gm_len);
+                const match = gm_text.match(pattern);
+                const matchEqu = gm_text.match(showEqu);
+                if (matchEqu && matchEqu[1] == 'equ') {
+                    _self.autoRepairEqu(gm, user);
+                }
+                gm.logger('[GmInput]', match ? match[1] : gm_text);
+            },
+            onLeave: function (retval) {}
+        });
+    },
+
+    /**
+     * 自动修理装备
+     * @param gm HookEvent实例
+     * @param user User指针
+     * @param max 测试手动设置耐久
+     **/
+    autoRepairEqu(gm: any, user: any, max?: number): void {
+        gm.api_CUser_SendNotiPacketMessage(user, `[${gm.get_timestamp()}]:已自动修理装备`, 8); // 给角色发消息
+        // 遍历身上的装备
+        const inven = HookNative.CUserCharacInfo_getCurCharacInvenW(user); // 获取角色背包
+        for (let slot = 10; slot <= 21; slot++) {
+            const equ = HookNative.CInventory_GetInvenRef(inven, INVENTORY_TYPE.BODY, slot);
+            const item_id = HookNative.Inven_Item_getKey(equ);
+
+            if (item_id) {
+                const detail = gm.api_CItem_getItemDetail(item_id);
+                const durability = equ.add(11).readU16(); // 当前耐久
+                gm.api_CUser_SendNotiPacketMessage(user, `[${detail.name}]：耐久[${durability}]`, 2); // 给角色发消息
+                gm.logger(`[${item_id}]durability:${durability}`);
+                const item_data = gm.find_item(item_id);
+
+                const durability_max = HookNative.CEquipItem_get_endurance(item_data); // 最大耐久
+                equ.add(11).writeU16(max ?? durability_max); // 写入耐久
+
+                // (客户端指针, 通知方式[仅客户端=1, 世界广播=0, 小队=2, war room=3], itemSpace[装备=0, 时装=1], 道具所在的背包槽)
+                // HookNative.CUser_SendUpdateItemList(user, 0, ENUM_ITEMSPACE.INVENTORY, slot);
+            }
+        }
+        HookNative.CUser_SendNotiPacket(user, 1, 2, 3);
+    },
     /**
      * 测试
      * @param gm HookEvent实例
      **/
-    debugCode(gm: any): void {}
+    debugCode(gm: any, params?: object): void {
+        gm.logger('[debugCode]', JSON.stringify(params || {}));
+    }
 };
 
 export default _HookGameEvent;

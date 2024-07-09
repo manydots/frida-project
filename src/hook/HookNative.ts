@@ -112,7 +112,7 @@ const _HookNative = {
     // 获取角色当前持有金币数量
     CInventory_get_money: new NativeFunction(ptr(0x81347d6), 'int', ['pointer'], { abi: 'sysv' }),
 
-    // 获取背包槽中的道具
+    // 获取背包槽中的道具 INVENTORY_TYPE
     CInventory_GetInvenRef: new NativeFunction(ptr(0x84fc1de), 'pointer', ['pointer', 'int', 'int'], { abi: 'sysv' }),
     // 背包中删除道具(背包指针, 背包类型, 槽, 数量, 删除原因, 记录删除日志)
     CInventory_delete_item: new NativeFunction(ptr(0x850400c), 'int', ['pointer', 'int', 'int', 'int', 'int', 'int'], { abi: 'sysv' }),
@@ -121,6 +121,29 @@ const _HookNative = {
 
     // 获取道具附加信息
     Inven_Item_get_add_info: new NativeFunction(ptr(0x80f783a), 'int', ['pointer'], { abi: 'sysv' }),
+
+    // 获取道具名
+    CItem_getItemName: new NativeFunction(ptr(0x811ed82), 'pointer', ['pointer'], { abi: 'sysv' }),
+    // 获取装备品级
+    CItem_getRarity: new NativeFunction(ptr(0x080f12d6), 'int', ['pointer'], { abi: 'sysv' }),
+    // 获取装备可穿戴等级
+    CItem_getUsableLevel: new NativeFunction(ptr(0x80f12ee), 'int', ['pointer'], { abi: 'sysv' }),
+    CItem_getAttachType: new NativeFunction(ptr(0x80f12e2), 'int', ['pointer'], { abi: 'sysv' }),
+
+    CItem_GetIndex: new NativeFunction(ptr(0x8110c48), 'int', ['pointer'], { abi: 'sysv' }),
+    CItem_GetGrade: new NativeFunction(ptr(0x8110c54), 'int', ['pointer'], { abi: 'sysv' }),
+    CItem_GetPrice: new NativeFunction(ptr(0x822c84a), 'int', ['pointer'], { abi: 'sysv' }),
+    CItem_GetGenRate: new NativeFunction(ptr(0x822c84a), 'int', ['pointer'], { abi: 'sysv' }),
+    CItem_GetNeedLevel: new NativeFunction(ptr(0x8545fda), 'int', ['pointer'], { abi: 'sysv' }),
+    CItem_GetItemGroupName: new NativeFunction(ptr(0x80f1312), 'int', ['pointer'], { abi: 'sysv' }),
+    CItem_GetUpSkillType: new NativeFunction(ptr(0x8545fcc), 'int', ['pointer'], { abi: 'sysv' }),
+    CItem_GetGetExpertJobCompoundMaterialVariation: new NativeFunction(ptr(0x850d292), 'int', ['pointer'], { abi: 'sysv' }),
+    CItem_GetExpertJobCompoundRateVariation: new NativeFunction(ptr(0x850d2aa), 'int', ['pointer'], { abi: 'sysv' }),
+    CItem_GetExpertJobCompoundResultVariation: new NativeFunction(ptr(0x850d2c2), 'int', ['pointer'], { abi: 'sysv' }),
+    CItem_GetExpertJobSelfDisjointBigWinRate: new NativeFunction(ptr(0x850d2de), 'int', ['pointer'], { abi: 'sysv' }),
+    CItem_GetExpertJobSelfDisjointResultVariation: new NativeFunction(ptr(0x850d2f6), 'int', ['pointer'], { abi: 'sysv' }),
+    CItem_GetExpertJobAdditionalExp: new NativeFunction(ptr(0x850d30e), 'int', ['pointer'], { abi: 'sysv' }),
+
     // 检查背包中道具是否为空
     Inven_Item_isEmpty: new NativeFunction(ptr(0x811ed66), 'int', ['pointer'], { abi: 'sysv' }),
     // 获取背包中道具item_id
@@ -142,6 +165,8 @@ const _HookNative = {
 
     // 通知客户端道具更新(客户端指针, 通知方式[仅客户端=1, 世界广播=0, 小队=2, war room=3], itemSpace[装备=0, 时装=1], 道具所在的背包槽)
     CUser_SendUpdateItemList: new NativeFunction(ptr(0x867c65a), 'int', ['pointer', 'int', 'int', 'int'], { abi: 'sysv' }),
+    // 通知客户端更新角色身上装备
+    CUser_SendNotiPacket: new NativeFunction(ptr(0x0867ba5c), 'int', ['pointer', 'int', 'int', 'int'], { abi: 'sysv' }),
 
     // 获取队伍中玩家
     CParty_get_user: new NativeFunction(ptr(0x08145764), 'pointer', ['pointer', 'int'], { abi: 'sysv' }),
@@ -149,16 +174,8 @@ const _HookNative = {
     // 修复金币异常
     CParty_UseAncientDungeonItems: new NativeFunction(ptr(0x859eac2), 'int', ['pointer', 'pointer', 'pointer', 'pointer'], { abi: 'sysv' }),
 
-    // 获取装备品级
-    CItem_getRarity: new NativeFunction(ptr(0x080f12d6), 'int', ['pointer'], { abi: 'sysv' }),
-    // 获取装备可穿戴等级
-    CItem_getUsableLevel: new NativeFunction(ptr(0x80f12ee), 'int', ['pointer'], { abi: 'sysv' }),
-    CItem_getAttachType: new NativeFunction(ptr(0x80f12e2), 'int', ['pointer'], { abi: 'sysv' }),
-    // 获取道具名
-    CItem_getItemName: new NativeFunction(ptr(0x811ed82), 'pointer', ['pointer'], { abi: 'sysv' }),
-
     // 获取装备耐久
-    CEquipItem_get_endurance: new NativeFunction(ptr(0x811ed98), 'int', ['pointer'], { abi: 'sysv' }),
+    CEquipItem_get_endurance: new NativeFunction(ptr(0x0811ed98), 'int', ['pointer'], { abi: 'sysv' }),
     CInventory_GetInvenData: new NativeFunction(ptr(0x084fbf2c), 'int', ['pointer', 'int', 'pointer'], { abi: 'sysv' }),
     CUserCharacInfo_getCurCharacInvenR: new NativeFunction(ptr(0x80da27e), 'pointer', ['pointer'], { abi: 'sysv' }),
     CInventory_get_empty_slot: new NativeFunction(ptr(0x84fb824), 'int', ['pointer', 'int', 'int'], { abi: 'sysv' }),
@@ -190,7 +207,6 @@ const _HookNative = {
 
     // MYSQL操作
     // 游戏中已打开的数据库索引(游戏数据库非线程安全 谨慎操作)
-    TAIWAN_CAIN: 2,
     DBMgr_GetDBHandle: new NativeFunction(ptr(0x83f523e), 'pointer', ['pointer', 'int', 'int'], { abi: 'sysv' }),
     MySQL_MySQL: new NativeFunction(ptr(0x83f3ac8), 'pointer', ['pointer'], { abi: 'sysv' }),
     MySQL_init: new NativeFunction(ptr(0x83f3ce4), 'int', ['pointer'], { abi: 'sysv' }),

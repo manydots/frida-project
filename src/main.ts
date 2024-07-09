@@ -7,13 +7,14 @@ const gm = HookEvent.getInstance();
 function start(): void {
     gm.logger('=== Frida Start ===');
 
-    echoVersion(); // Frida.version
+    gm.echoVersion(); // 打印Frida.version
     // gm.hook('historyLog'); // 捕获玩家游戏日志
     gm.hook('userLogout'); // 角色登入登出处理
     gm.hook('autoUnsealEquipment'); // 魔法封印自动解封/分解时装 辅助检查CParty_Item_Slot
-    gm.hook('CPartyGetPlayTick'); // 获取副本通关时长
+    gm.hook('CPartyGetPlayTick', { repair: true }); // 获取副本通关时长
     gm.hook('CPartyGetItem'); // 副本获取道具
-    // gm.hook('debugCode'); // 测试代码
+    gm.hook('GmInput'); // 玩家指令监听
+    gm.hook('debugCode'); // 测试代码
 
     gm.logger('=== Frida End ===');
 }
@@ -42,16 +43,6 @@ function setup(): void {
     }
 
     start(); // frida主功能
-}
-
-/**
- * Frida.version版本
- */
-function echoVersion(): void {
-    // const base_address = ptr(0x1ac790c);
-    // const offset = 0x258;
-    // const target_address = base_address.add(offset);
-    gm.logger('[version]', Frida.version);
 }
 
 /**
