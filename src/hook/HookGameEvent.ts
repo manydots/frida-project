@@ -22,7 +22,8 @@ const _HookGameEvent = {
             // 原函数执行完毕, 这里可以得到并修改返回值retval
             onLeave: function (retval) {
                 // 发送频道消息
-                gm.api_GameWorld_SendNotiPacketMessage(`玩家[${gm.api_CUserCharacInfo_getCurCharacName(this.user)}]上线了`, 14);
+                // gm.api_GameWorld_SendNotiPacketMessage(`玩家[${gm.api_CUserCharacInfo_getCurCharacName(this.user)}]上线了`, 14);
+                gm.api_GameWorld_SendGMMessage(`玩家上线了`, gm.api_CUserCharacInfo_getCurCharacName(this.user), 15, 110); // 发送频道喇叭消息
 
                 // gm.api_CUser_SendNotiPacketMessage(this.user, `Hello ${gm.api_CUserCharacInfo_getCurCharacName(this.user)}`, 2); // 给角色发问候消息
                 // gm.api_SendItemMessage(this.user, 3037); // 测试弹窗物品信息 3037无色小晶体
@@ -273,19 +274,42 @@ const _HookGameEvent = {
             if (item_id) {
                 const detail = gm.api_CItem_getItemDetail(item_id);
                 const durability = equ.add(11).readU16(); // 当前耐久
-                gm.api_CUser_SendNotiPacketMessage(user, `[${detail.name}]：耐久[${durability}]`, 2); // 给角色发消息
-                gm.logger(`[${item_id}]durability:${durability}`);
                 const item_data = gm.find_item(item_id);
-
                 const durability_max = HookNative.CEquipItem_get_endurance(item_data); // 最大耐久
-                equ.add(11).writeU16(max ?? durability_max); // 写入耐久
 
-                // (客户端指针, 通知方式[仅客户端=1, 世界广播=0, 小队=2, war room=3], itemSpace[装备=0, 时装=1], 道具所在的背包槽)
-                // HookNative.CUser_SendUpdateItemList(user, 0, ENUM_ITEMSPACE.INVENTORY, slot);
+                if (durability_max > 0) {
+                    gm.api_CUser_SendNotiPacketMessage(user, `[${detail.name}]：耐久[${durability}]`, 2); // 给角色发消息
+                    // gm.logger(`[${item_id}]durability:${durability}`);
+                    equ.add(11).writeU16(max ?? durability_max); // 写入耐久
+                    // (客户端指针, 通知方式[仅客户端=1, 世界广播=0, 小队=2, war room=3], itemSpace[装备=0, 时装=1], 道具所在的背包槽)
+                    // HookNative.CUser_SendUpdateItemList(user, 0, ENUM_ITEMSPACE.INVENTORY, slot);
+                }
             }
         }
         HookNative.CUser_SendNotiPacket(user, 1, 2, 3);
     },
+
+    /**
+     * 解锁全部表情
+     * @param gm HookEvent实例
+     **/
+    UnlockEmoji(gm: any): void {
+        Interceptor.attach(ptr(hookType.Unlock_Emoji1), {
+            onEnter: function (args) {},
+            onLeave: function (retval) {
+                // @ts-ignore
+                retval.replace(1);
+            }
+        });
+        Interceptor.attach(ptr(hookType.Unlock_Emoji2), {
+            onEnter: function (args) {},
+            onLeave: function (retval) {
+                // @ts-ignore
+                retval.replace(1);
+            }
+        });
+    },
+
     /**
      * 测试
      * @param gm HookEvent实例

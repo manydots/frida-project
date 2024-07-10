@@ -14,7 +14,9 @@ function start(): void {
     gm.hook('CPartyGetPlayTick', { repair: true }); // 获取副本通关时长
     gm.hook('CPartyGetItem'); // 副本获取道具
     gm.hook('GmInput'); // 玩家指令监听
-    gm.hook('debugCode'); // 测试代码
+    gm.hook('UnlockEmoji'); // 解锁全部表情
+    // gm.hook('debugCode'); // 测试代码
+    // gm.api_runScript_delay(gm.logger, 2000, 'AAA', 'BBB'); // 延迟delay执行函数
 
     gm.logger('=== Frida End ===');
 }

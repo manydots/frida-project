@@ -143,6 +143,27 @@ class _HookEvent {
     }
 
     /**
+     * 频道喇叭
+     * @param msg 发送文本
+     * @param name 发送人名称
+     * @param msg_type 消息类型 类型33, ch=11必须为存在的频道
+     * @param ch 频道名称
+     */
+    api_GameWorld_SendGMMessage(msg: string, name: string = '系统公告', msg_type: number = 15, ch: number = 11): void {
+        const packet_guard = this.api_PacketGuard_PacketGuard();
+        HookNative.InterfacePacketBuf_put_header(packet_guard, 0, 118);
+        HookNative.InterfacePacketBuf_put_byte(packet_guard, msg_type); // 13频道喇叭 15服务器喇叭 33 1:1私聊
+        HookNative.InterfacePacketBuf_put_byte(packet_guard, ch);
+        HookNative.InterfacePacketBuf_put_short(packet_guard, 0);
+        this.api_InterfacePacketBuf_put_string(packet_guard, name);
+        this.api_InterfacePacketBuf_put_string(packet_guard, msg);
+        HookNative.InterfacePacketBuf_finalize(packet_guard, 1);
+
+        HookNative.GameWorld_send_all_with_state(HookNative.G_GameWorld(), packet_guard, 3); // 只给state >= 3 的玩家发公告
+        HookNative.Destroy_PacketGuard_PacketGuard(packet_guard);
+    }
+
+    /**
      * 给角色发消息
      * @param user User指针
      * @param msg 发送文本
@@ -348,7 +369,7 @@ class _HookEvent {
             return {
                 name: HookNative.CItem_getItemName(CItem).readUtf8String(-1),
                 rarity: HookNative.CItem_getRarity(CItem),
-                grade: HookNative.CItem_GetGrade(CItem),
+                grade: HookNative.CItem_GetGrade(CItem), // 装备等级
                 itemId: HookNative.Inven_Item_getKey(CItem),
                 index: HookNative.CItem_GetIndex(CItem),
                 price: HookNative.CItem_GetPrice(CItem),
@@ -406,6 +427,19 @@ class _HookEvent {
         this.timer_dispatcher_list.push([func.bind(_self), args]); // 改变this指向
         HookNative.Destroy_Guard_Mutex_Guard(guard);
         return;
+    }
+
+    /**
+     * 延迟delay执行函数
+     * @param func Function
+     * @param args 参数列表
+     * @param delay 延迟时间
+     */
+    api_runScript_delay(func: Function, delay: number, ...args: any[]): void {
+        let _self = this;
+        setTimeout(() => {
+            func.call(_self, args);
+        }, delay);
     }
 
     // 挂接消息分发线程 确保代码线程安全
@@ -530,13 +564,6 @@ class _HookEvent {
         const a1 = Memory.alloc(100);
         HookNative.Guard_Mutex_Guard(a1, HookNative.G_TimerQueue().add(16));
         return a1;
-    }
-
-    /**
-     * 设置定时器 到期后在dispatcher线程执行
-     */
-    api_scheduleOnMainThread_delay(f: any, args: any, delay: number): void {
-        setTimeout(this.api_scheduleOnMainThread, delay, f, args);
     }
 
     // 打开数据库
