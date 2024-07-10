@@ -448,28 +448,40 @@ class _HookEvent {
     init_db(): void {
         // 配置文件
         const config = this.global_config['db_config'];
+        const db_ip = '127.0.0.1';
+        const db_port = 3306;
+        const db_account = config['account'];
+        const db_password = config['password'];
+
         // 打开数据库连接
         if (this.mysql_taiwan_cain == null) {
-            this.mysql_taiwan_cain = this.api_MYSQL_open('taiwan_cain', '127.0.0.1', 3306, config['account'], config['password']);
+            this.mysql_taiwan_cain = this.api_MYSQL_open('taiwan_cain', db_ip, db_port, db_account, db_password);
         }
         if (this.mysql_taiwan_cain_2nd == null) {
-            this.mysql_taiwan_cain_2nd = this.api_MYSQL_open('taiwan_cain_2nd', '127.0.0.1', 3306, config['account'], config['password']);
+            this.mysql_taiwan_cain_2nd = this.api_MYSQL_open('taiwan_cain_2nd', db_ip, db_port, db_account, db_password);
         }
         if (this.mysql_taiwan_billing == null) {
-            this.mysql_taiwan_billing = this.api_MYSQL_open('taiwan_billing', '127.0.0.1', 3306, config['account'], config['password']);
+            this.mysql_taiwan_billing = this.api_MYSQL_open('taiwan_billing', db_ip, db_port, db_account, db_password);
         }
         // 建库frida
         this.api_MySQL_exec(this.mysql_taiwan_cain, 'create database if not exists frida default charset utf8;');
         if (this.mysql_frida == null) {
-            this.mysql_frida = this.api_MYSQL_open('frida', '127.0.0.1', 3306, config['account'], config['password']);
+            this.mysql_frida = this.api_MYSQL_open('frida', db_ip, db_port, db_account, db_password);
+        } else {
+            // 建表frida.game_event
+            this.api_MySQL_exec(
+                this.mysql_frida,
+                'CREATE TABLE game_event (event_id varchar(30) NOT NULL, event_info mediumtext NULL, PRIMARY KEY (event_id)) ENGINE=InnoDB DEFAULT CHARSET=utf8;'
+            );
+
+            // 建表frida.dp_login
+            this.api_MySQL_exec(
+                this.mysql_frida,
+                'CREATE TABLE if not exists frida.dp_login(id INT(10) not null primary key AUTO_INCREMENT, uid INT(10) default 0 not null, cid INT(10) default 0 not null, first_login_time INT(10) UNSIGNED default 0 not null, create_time DATETIME DEFAULT NULL)'
+            );
+            // 载入活动数据
+            this.event_villageattack_load_from_db();
         }
-        // 建表frida.game_event
-        this.api_MySQL_exec(
-            this.mysql_frida,
-            'CREATE TABLE game_event (event_id varchar(30) NOT NULL, event_info mediumtext NULL, PRIMARY KEY (event_id)) ENGINE=InnoDB DEFAULT CHARSET=utf8;'
-        );
-        // 载入活动数据
-        this.event_villageattack_load_from_db();
     }
 
     // 从数据库载入怪物攻城活动数据
