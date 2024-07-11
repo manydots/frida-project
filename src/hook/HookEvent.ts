@@ -370,7 +370,7 @@ class _HookEvent {
             return {
                 name: HookNative.CItem_getItemName(CItem).readUtf8String(-1),
                 rarity: HookNative.CItem_getRarity(CItem),
-                grade: HookNative.CItem_GetGrade(CItem), // 装备等级
+                grade: HookNative.CItem_GetGrade(CItem),
                 itemId: HookNative.Inven_Item_getKey(CItem),
                 index: HookNative.CItem_GetIndex(CItem),
                 price: HookNative.CItem_GetPrice(CItem),

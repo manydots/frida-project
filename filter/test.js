@@ -6,7 +6,7 @@ var obj = {};
 // var str1 = ['Party', 'Battle', 'Dungeon', 'User'];
 var arr = [];
 // '0x08130fa8': '_ZN12advancealtar7Manager10giveUpGameEP5CUser',
-var str1 = ['dungeon_clear']; //  DUNGEON_CLEAR EnterDungeon leave_game_world
+var str1 = ['CParty']; //  DUNGEON_CLEAR EnterDungeon leave_game_world  GetDungeon
 // 加入队伍 join_user
 /**
  * 离开队伍 leave_user
@@ -17,7 +17,7 @@ var str1 = ['dungeon_clear']; //  DUNGEON_CLEAR EnterDungeon leave_game_world
  * ["0x08636398"] = "_ZN18TimerSetPlayResult12dispatch_sigEiij",
  * ["0x085b2412"] = "_ZN6CParty13SetPlayResultEP5CUser",
  * ["0x085ab736"] = "_ZN6CParty13dungeon_clearEv",
- * 
+ *
  * 副本房间清理完成 (开门) CLEAR_MAP
  */
 

@@ -179,7 +179,8 @@ const _HookGameEvent = {
                 if (autoRepair) {
                     _self.autoRepairEqu(gm, this.user);
                 }
-            }
+            },
+            onLeave: function (retval) {}
         });
 
         // 放弃副本
@@ -303,6 +304,20 @@ const _HookGameEvent = {
             }
         });
         Interceptor.attach(ptr(hookType.Unlock_Emoji2), {
+            onEnter: function (args) {},
+            onLeave: function (retval) {
+                // @ts-ignore
+                retval.replace(1);
+            }
+        });
+    },
+
+    /**
+     * 解锁副本门口摆摊 PrivateStore
+     * @param gm HookEvent实例
+     **/
+    IgnoreNearDungeon(): void {
+        Interceptor.attach(ptr(hookType.Ignore_Near_Dungeon), {
             onEnter: function (args) {},
             onLeave: function (retval) {
                 // @ts-ignore

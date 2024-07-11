@@ -4,6 +4,7 @@
  * Party 队伍相关
  * - CParty_GetManager 获取队长
  * - CParty_GetUser 获取队伍中玩家
+ * - CParty_GetDungeon 获取副本对象
  * - CParty_ReturnToVillage 返回城镇
  *
  * User 角色相关
@@ -14,13 +15,30 @@
  *
  */
 const GameNative = {
+    // 获取DataManager实例
+    G_CDataManager: new NativeFunction(ptr(0x80cc19b), 'pointer', [], { abi: 'sysv' }),
+
     // Party
     // 获得队长
     CParty_GetManager: new NativeFunction(ptr(0x08145780), 'pointer', ['pointer'], { abi: 'sysv' }),
     // 获取队伍中玩家
     CParty_GetUser: new NativeFunction(ptr(0x08145764), 'pointer', ['pointer', 'int'], { abi: 'sysv' }),
+
     // 返回城镇
     CParty_ReturnToVillage: new NativeFunction(ptr(0x085aca60), 'int', ['pointer'], { abi: 'sysv' }),
+
+    CDataManager_find_dungeon: new NativeFunction(ptr(0x0835f9f8), 'pointer', ['pointer', 'int'], { abi: 'sysv' }),
+    // 获取当前玩家所在副本
+    getDungeonIdxAfterClear: new NativeFunction(ptr(0x0867cb90), 'int', ['pointer'], { abi: 'sysv' }),
+
+    // 获取副本名称
+    CDungeon_GetName: new NativeFunction(ptr(0x081455a6), 'pointer', ['pointer'], { abi: 'sysv' }),
+    // 获取副本等级
+    // CDungeon_GetMinLevel: new NativeFunction(ptr(0x0814559a), 'int', ['pointer'], { abi: 'sysv' }),
+    // 副本标准等级
+    // CDungeon_GetStandardLevel: new NativeFunction(ptr(0x080f9810), 'int', ['pointer'], { abi: 'sysv' }),
+    // 获取副本id
+    CDungeon_get_index: new NativeFunction(ptr(0x080fdcf0), 'int', ['pointer'], { abi: 'sysv' }),
 
     // User
     // 获取角色所在队伍

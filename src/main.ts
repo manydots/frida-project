@@ -16,6 +16,7 @@ function start(): void {
     gm.hook('CPartyGetItem'); // 副本获取道具
     gm.hook('GmInput'); // 玩家指令监听
     gm.hook('UnlockEmoji'); // 解锁全部表情
+    // gm.hook('IgnoreNearDungeon'); // 解锁副本门口摆摊
     // gm.hook('debugCode'); // 测试代码
     // gm.api_runScript_delay(logger, 2000, 'AAA', 'BBB'); // 延迟delay执行函数
 

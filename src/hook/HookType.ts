@@ -35,6 +35,8 @@ enum _HookType {
     GmInput = 0x0820bbde, // 玩家指令监听
     Unlock_Emoji1 = 0x080e5ca6, // 解锁全部表情
     Unlock_Emoji2 = 0x080e5d42,
+
+    Ignore_Near_Dungeon = 0x085c5082, // 解锁副本门口摆摊
     Unseal_Equipment = 0x08502d86 // 魔法封印自动解封/分解时装
 }
 
