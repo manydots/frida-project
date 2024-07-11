@@ -169,7 +169,7 @@ const _HookNative = {
     CUser_SendNotiPacket: new NativeFunction(ptr(0x0867ba5c), 'int', ['pointer', 'int', 'int', 'int'], { abi: 'sysv' }),
 
     // 获取队伍中玩家
-    CParty_get_user: new NativeFunction(ptr(0x08145764), 'pointer', ['pointer', 'int'], { abi: 'sysv' }),
+    CParty_GetUser: new NativeFunction(ptr(0x08145764), 'pointer', ['pointer', 'int'], { abi: 'sysv' }),
     CParty_send_to_party: new NativeFunction(ptr(0x0859d14e), 'int', ['pointer', 'pointer'], { abi: 'sysv' }),
     // 修复金币异常
     CParty_UseAncientDungeonItems: new NativeFunction(ptr(0x859eac2), 'int', ['pointer', 'pointer', 'pointer', 'pointer'], { abi: 'sysv' }),

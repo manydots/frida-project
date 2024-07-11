@@ -1,11 +1,12 @@
 import HookEvent from './hook/HookEvent';
+import { logger } from './utils/tool';
 const gm = HookEvent.getInstance();
 
 /**
  * 加载主功能
  */
 function start(): void {
-    gm.logger('=== Frida Start ===');
+    logger('=== Frida Start ===');
 
     gm.echoVersion(); // 打印Frida.version
     // gm.hook('historyLog'); // 捕获玩家游戏日志
@@ -16,9 +17,9 @@ function start(): void {
     gm.hook('GmInput'); // 玩家指令监听
     gm.hook('UnlockEmoji'); // 解锁全部表情
     // gm.hook('debugCode'); // 测试代码
-    // gm.api_runScript_delay(gm.logger, 2000, 'AAA', 'BBB'); // 延迟delay执行函数
+    // gm.api_runScript_delay(logger, 2000, 'AAA', 'BBB'); // 延迟delay执行函数
 
-    gm.logger('=== Frida End ===');
+    logger('=== Frida End ===');
 }
 
 /**
@@ -66,7 +67,7 @@ function frida_main(ls: any, _args: any): number {
     // 建议约定lua和js通讯采用json格式
     const args = _args.readUtf8String();
     // 在这里做你需要的事情
-    gm.logger(`frida main, args = ${args}`);
+    logger(`frida main, args = ${args}`);
     return 0;
 }
 
@@ -116,7 +117,7 @@ function handler_communication(): void {
     Interceptor.replace(addr, new NativeCallback(frida_handler, 'int', ['pointer', 'int', 'float', 'pointer']));
 
     Interceptor.flush();
-    gm.logger('frida setup ok');
+    logger('frida setup ok');
 }
 
 /**
@@ -126,7 +127,7 @@ function awake(): void {
     Interceptor.attach(ptr(0x829ea5a), {
         onEnter: function (args) {},
         onLeave: function (retval) {
-            gm.logger('=== frida awake load ===');
+            logger('=== frida awake load ===');
             setup();
         }
     });
@@ -134,7 +135,7 @@ function awake(): void {
 
 rpc.exports = {
     init: function (stage, parameters) {
-        gm.logger('frida init ' + stage);
+        logger('frida init ' + stage);
         // 延迟加载
         if (stage == 'early') {
             // 配合dp2.8+使用
@@ -147,12 +148,12 @@ rpc.exports = {
             }
         } else {
             // 热重载
-            gm.logger('=== frida reload ===');
+            logger('=== frida reload ===');
             setup();
         }
     },
     dispose: function () {
         gm.uninit_db(); // 关闭数据库连接
-        gm.logger('=== frida dispose ===');
+        logger('=== frida dispose ===');
     }
 };

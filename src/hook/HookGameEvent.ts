@@ -1,5 +1,6 @@
 import hookType, { HookNative } from './HookType';
 import { INVENTORY_TYPE, ENUM_ITEMSPACE } from '../enum/enum';
+import { logger, get_timestamp, formatTime } from '../utils/tool';
 
 interface Params {
     repair?: boolean; // 是否自动修理
@@ -17,7 +18,7 @@ const _HookGameEvent = {
             onEnter: function (args) {
                 // 保存函数参数
                 this.user = args[1];
-                gm.logger(`[Reach_GameWorld][user]${this.user}`);
+                logger(`[Reach_GameWorld][user]${this.user}`);
             },
             // 原函数执行完毕, 这里可以得到并修改返回值retval
             onLeave: function (retval) {
@@ -30,15 +31,15 @@ const _HookGameEvent = {
                 // gm.api_setCurCharacStamia(this.user, 50); // 设置角色虚弱值
                 // gm.api_CUser_AddItem(this.user, 3037, 10); // 给角色发道具/api_WongWork_SendMail发送邮件
                 // gm.api_CUser_gain_exp_sp(this.user, 10000); // 给角色发经验
-                // gm.logger(gm.api_CEnvironment_get_file_name()); // 获取当前频道文件名
-                // gm.logger(gm.api_getItemCount(this.user, 3037)); // 获取背包中指定道具数量
+                // logger(gm.api_CEnvironment_get_file_name()); // 获取当前频道文件名
+                // logger(gm.api_getItemCount(this.user, 3037)); // 获取背包中指定道具数量
             }
         });
         // 角色退出处理函数
         Interceptor.attach(ptr(hookType.Leave_GameWorld), {
             onEnter: function (args) {
                 const user = args[0];
-                gm.logger(`[Leave_GameWorld][user]${user}`);
+                logger(`[Leave_GameWorld][user]${user}`);
             },
             onLeave: function (retval) {}
         });
@@ -54,7 +55,7 @@ const _HookGameEvent = {
                 const history_log = args[1].readUtf8String(-1);
                 const group = history_log?.split(',');
                 const game_event = group ? group[13].slice(1) : null; // 玩家游戏事件 删除多余空格
-                gm.logger(`[HistoryLog]${game_event}`);
+                logger(`[HistoryLog]${game_event}`);
             },
             onLeave: function (retval) {}
         });
@@ -99,7 +100,7 @@ const _HookGameEvent = {
                     user_map_obj[characNo] = {};
                 }
                 user_map_obj[characNo].cparty_item_slot = slot;
-                gm.logger('[CParty_Item_Slot]', slot);
+                logger('[CParty_Item_Slot]', slot);
             }
         });
     },
@@ -138,7 +139,7 @@ const _HookGameEvent = {
                 // 0白装 1蓝装 2紫装 3粉装 4异界？ 5史诗
                 const ItemRarity = HookNative.CItem_getRarity(itemData); // 稀有度
                 // 装备数量不可以通过 num 获取
-                gm.logger('ItemRarity', ItemRarity);
+                logger('ItemRarity', ItemRarity);
                 if (ItemRarity >= 2) {
                     gm.api_GameWorld_SendNotiPacketMessage(`恭喜「${charac_name}」捡起了传说中的[${item_name}]${num}个`, 14);
                 }
@@ -159,7 +160,7 @@ const _HookGameEvent = {
         // Interceptor.attach(ptr(hookType.Dungeon_Difficult), {
         //     onEnter: function (args) {
         //         const dungeon_difficult = args[2].toInt32();
-        //         gm.logger(`[Dungeon_Difficult]${[dungeon_difficult]}`);
+        //         logger(`[Dungeon_Difficult]${[dungeon_difficult]}`);
         //     }
         // });
 
@@ -172,7 +173,7 @@ const _HookGameEvent = {
                     user_map_obj[characNo] = {};
                 }
                 user_map_obj[characNo].startTime = gm.local_getSysUTCSec();
-                gm.logger(`[Dungeon_Start]${[this.user]}`);
+                logger(`[Dungeon_Start]${[this.user]}`);
 
                 // 开启自动修理
                 if (autoRepair) {
@@ -187,7 +188,7 @@ const _HookGameEvent = {
                 this.user = args[1];
                 const characNo = HookNative.CUserCharacInfo_getCurCharacNo(this.user);
                 user_map_obj[characNo] = null;
-                gm.logger(`[Dungeon_GiveUp]${[this.user]}`);
+                logger(`[Dungeon_GiveUp]${[this.user]}`);
             }
         });
 
@@ -196,7 +197,7 @@ const _HookGameEvent = {
         //     onEnter: function (args) {
         //         this.user = args[1];
         //         const monster_id = args[2].toInt32();
-        //         gm.logger(`[Dungeon_Mob_Die]${[monster_id]}`);
+        //         logger(`[Dungeon_Mob_Die]${[monster_id]}`);
         //     },
         //     onLeave: function (retval) {}
         // });
@@ -205,7 +206,7 @@ const _HookGameEvent = {
         Interceptor.attach(ptr(hookType.Dungeon_Clear), {
             onEnter: function (args) {
                 this.user = args[1];
-                gm.logger(`[Dungeon_Clear]${[this.user]}`);
+                logger(`[Dungeon_Clear]${[this.user]}`);
             }
         });
 
@@ -213,7 +214,7 @@ const _HookGameEvent = {
         Interceptor.attach(ptr(hookType.Dungeon_Finish), {
             onEnter: function (args) {
                 this.user = args[1];
-                gm.logger(`[Dungeon_Finish]${[this.user]}`);
+                logger(`[Dungeon_Finish]${[this.user]}`);
                 const characNo = HookNative.CUserCharacInfo_getCurCharacNo(this.user);
                 const dungeonName = gm.api_CDungeon_getDungeonName(HookNative.getDungeonIdxAfterClear(this.user));
                 const endTime = gm.local_getSysUTCSec();
@@ -223,7 +224,7 @@ const _HookGameEvent = {
                 if (duration && startTime && endTime && duration > 0) {
                     user_map_obj[characNo].startTime = null;
                     user_map_obj[characNo].duration = duration;
-                    gm.api_GameWorld_SendNotiPacketMessage(`玩家[${gm.api_CUserCharacInfo_getCurCharacName(this.user)}]${gm.formatTime(duration)}通关了地下城[${dungeonName}]`, 16);
+                    gm.api_GameWorld_SendNotiPacketMessage(`玩家[${gm.api_CUserCharacInfo_getCurCharacName(this.user)}]${formatTime(duration)}通关了地下城[${dungeonName}]`, 16);
                 }
             }
         });
@@ -251,7 +252,7 @@ const _HookGameEvent = {
                 if (matchEqu && matchEqu[1] == 'equ') {
                     _self.autoRepairEqu(gm, user);
                 }
-                gm.logger('[GmInput]', match ? match[1] : gm_text);
+                logger('[GmInput]', match ? match[1] : gm_text);
             },
             onLeave: function (retval) {}
         });
@@ -264,7 +265,7 @@ const _HookGameEvent = {
      * @param max 测试手动设置耐久
      **/
     autoRepairEqu(gm: any, user: any, max?: number): void {
-        gm.api_CUser_SendNotiPacketMessage(user, `[${gm.get_timestamp()}]:已自动修理装备`, 8); // 给角色发消息
+        gm.api_CUser_SendNotiPacketMessage(user, `[${get_timestamp()}]:已自动修理装备`, 8); // 给角色发消息
         // 遍历身上的装备
         const inven = HookNative.CUserCharacInfo_getCurCharacInvenW(user); // 获取角色背包
         for (let slot = 10; slot <= 21; slot++) {
@@ -279,7 +280,7 @@ const _HookGameEvent = {
 
                 if (durability_max > 0) {
                     gm.api_CUser_SendNotiPacketMessage(user, `[${detail.name}]：耐久[${durability}]`, 2); // 给角色发消息
-                    // gm.logger(`[${item_id}]durability:${durability}`);
+                    // logger(`[${item_id}]durability:${durability}`);
                     equ.add(11).writeU16(max ?? durability_max); // 写入耐久
                     // (客户端指针, 通知方式[仅客户端=1, 世界广播=0, 小队=2, war room=3], itemSpace[装备=0, 时装=1], 道具所在的背包槽)
                     // HookNative.CUser_SendUpdateItemList(user, 0, ENUM_ITEMSPACE.INVENTORY, slot);
@@ -315,7 +316,7 @@ const _HookGameEvent = {
      * @param gm HookEvent实例
      **/
     debugCode(gm: any, params?: object): void {
-        gm.logger('[debugCode]', JSON.stringify(params || {}));
+        logger('[debugCode]', JSON.stringify(params || {}));
     }
 };
 

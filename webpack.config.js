@@ -40,6 +40,9 @@ module.exports = {
         ]
     },
     resolve: {
+        alias: {
+            '@': path.resolve(__dirname, 'src/') // 将@设置为项目src目录的绝对路径
+        },
         extensions: ['.tsx', '.ts', '.js'] // 解析文件扩展名
     }
 };
