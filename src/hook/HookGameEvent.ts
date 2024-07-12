@@ -1,6 +1,7 @@
 import hookType, { HookNative } from './HookType';
 import { INVENTORY_TYPE, ENUM_ITEMSPACE } from '../enum/enum';
 import { logger, get_timestamp, formatTime } from '../utils/tool';
+import Party from '@/game/Party';
 
 interface Params {
     repair?: boolean; // 是否自动修理
@@ -157,12 +158,14 @@ const _HookGameEvent = {
         const _self = this;
 
         // 选择副本难度时, 获取难度参数
-        // Interceptor.attach(ptr(hookType.Dungeon_Difficult), {
-        //     onEnter: function (args) {
-        //         const dungeon_difficult = args[2].toInt32();
-        //         logger(`[Dungeon_Difficult]${[dungeon_difficult]}`);
-        //     }
-        // });
+        Interceptor.attach(ptr(hookType.Dungeon_Difficult), {
+            onEnter: function (args) {
+                const dungeonId = args[1].toInt32();
+                const dungeon_difficult = args[2].toInt32();
+                const happyParty = args[3]; // 是否进入深渊
+                logger(`[Dungeon_Difficult]${[dungeon_difficult]}[dungeonId:${dungeonId}][happyParty:${happyParty}]`);
+            }
+        });
 
         // 进入副本
         Interceptor.attach(ptr(hookType.Dungeon_Start), {
@@ -180,7 +183,12 @@ const _HookGameEvent = {
                     _self.autoRepairEqu(gm, this.user);
                 }
             },
-            onLeave: function (retval) {}
+            onLeave: function (retval) {
+                const CParty = new Party(this.user);
+                const CPartyItem = CParty.GetDungeonItem();
+                logger(`[Interceptor][${CPartyItem.pointer}][${CPartyItem.dungeonId}]`);
+                gm.api_CUser_SendNotiPacketMessage(this.user, `进入地下城[${CPartyItem.name}] Lv.${CPartyItem.level}`, 1); // 给角色发消息
+            }
         });
 
         // 放弃副本
@@ -266,7 +274,7 @@ const _HookGameEvent = {
      * @param max 测试手动设置耐久
      **/
     autoRepairEqu(gm: any, user: any, max?: number): void {
-        gm.api_CUser_SendNotiPacketMessage(user, `[${get_timestamp()}]:已自动修理装备`, 8); // 给角色发消息
+        // gm.api_CUser_SendNotiPacketMessage(user, `[${get_timestamp()}]:已自动修理装备`, 8); // 给角色发消息
         // 遍历身上的装备
         const inven = HookNative.CUserCharacInfo_getCurCharacInvenW(user); // 获取角色背包
         for (let slot = 10; slot <= 21; slot++) {
@@ -279,7 +287,8 @@ const _HookGameEvent = {
                 const item_data = gm.find_item(item_id);
                 const durability_max = HookNative.CEquipItem_get_endurance(item_data); // 最大耐久
 
-                if (durability_max > 0) {
+                // 当前耐久小于最大耐久修理
+                if (durability_max > 0 && durability < durability_max) {
                     gm.api_CUser_SendNotiPacketMessage(user, `[${detail.name}]：耐久[${durability}]`, 2); // 给角色发消息
                     // logger(`[${item_id}]durability:${durability}`);
                     equ.add(11).writeU16(max ?? durability_max); // 写入耐久

@@ -97,16 +97,39 @@ class Party {
         }
         return null;
     }
+
+    /**
+     * 获取副本等级
+     * @returns 副本等级
+     */
+    GetDungeonMinLevel(): number {
+        const dungeonId = GameNative.getDungeonIdxAfterClear(this.CUser);
+        return GameNative.CDungeon_GetMinLevel(GameNative.G_GameWorld(), dungeonId);
+    }
+
     /**
      * 获取副本名称
      * @returns CDungeonName
      */
-    GetDungeonName() {
+    GetDungeonName(): any {
         const CDungeon = this.GetDungeon();
         if (!CDungeon.isNull()) {
             return CDungeon.readUtf8String(-1);
         }
         return '';
+    }
+
+    /**
+     * 获取副本详情
+     * @returns 副本详情
+     */
+    GetDungeonItem(): any {
+        const dungeonId = GameNative.getDungeonIdxAfterClear(this.CUser);
+        const dungeon = this.GetDungeon();
+        const level = GameNative.CDungeon_GetMinLevel(GameNative.G_GameWorld(), dungeonId);
+        const name = !dungeon.isNull() ? dungeon.readUtf8String(-1) : '';
+
+        return { level, name, dungeonId, pointer: dungeon };
     }
 }
 

@@ -100,4 +100,18 @@ function echoVersion(): void {
     logger('[version]', Frida.version);
 }
 
-export { logger, formatTime, get_timestamp, get_random_int, echoVersion };
+/**
+ * 内存十六进制打印
+ */
+function bin2hex(p: any, len: any): any {
+    let hex = '';
+    for (let i = 0; i < len; i++) {
+        let s = p.add(i).readU8().toString(16);
+        if (s.length == 1) s = '0' + s;
+        hex += s;
+        if (i != len - 1) hex += ' ';
+    }
+    return hex;
+}
+
+export { logger, formatTime, get_timestamp, get_random_int, echoVersion, bin2hex };
