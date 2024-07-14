@@ -2,6 +2,7 @@ import hookType, { HookNative } from './HookType';
 import { INVENTORY_TYPE, ENUM_ITEMSPACE } from '../enum/enum';
 import { logger, get_timestamp, formatTime } from '../utils/tool';
 import Party from '@/game/Party';
+import User from '@/game/User';
 
 interface Params {
     repair?: boolean; // 是否自动修理

@@ -6,18 +6,9 @@ class User {
     private static instance: User; // 私有静态属性
     private CUser: any = null; // User指针
 
-    // 构造函数 new User('0xuser'); 或 new User({ user: '0xuser' });
-    constructor(userPointer: string);
-    constructor(userPointer: { user: string });
-    constructor(userPointer: string | { user: string }) {
-        // 区分不同的user类型
-        if (typeof userPointer === 'string') {
-            // 处理字符串类型
-            this.CUser = userPointer;
-        } else {
-            // 处理对象类型
-            this.CUser = userPointer?.user;
-        }
+    // 构造函数
+    constructor(user: any) {
+        this.CUser = user;
     }
 
     /**
@@ -39,6 +30,66 @@ class User {
     GetParty(): any {
         const CParty = GameNative.CUser_GetParty(this.CUser);
         return CParty;
+    }
+
+    /**
+     * 获取账号ID
+     * @returns AccId
+     */
+    GetAccId(): number {
+        return GameNative.CUser_GetAccId(this.CUser);
+    }
+
+    /**
+     * 获取角色ID
+     * @returns CharacNo
+     */
+    GetCharacNo(): number {
+        return GameNative.CUser_GetCharacNo(this.CUser);
+    }
+
+    /**
+     * 获取角色名字
+     * @returns 角色名字
+     */
+    GetCharacName(): any {
+        const p = GameNative.CUser_GetCharacName(this.CUser);
+        if (p.isNull()) {
+            return '';
+        }
+        return p.readUtf8String(-1);
+    }
+
+    /**
+     * 获取角色等级
+     * @returns 角色等级
+     */
+    GetCharacLevel(): number {
+        return GameNative.CUser_GetCharacLevel(this.CUser);
+    }
+
+    /**
+     * 获取角色职业
+     * @returns 角色职业
+     */
+    GetCharacJob(): number {
+        return GameNative.CUser_GetCharacJob(this.CUser);
+    }
+
+    /**
+     * 获取角色转职职业
+     * @returns 角色转职职业
+     */
+    GetCharacGrowType(): number {
+        return GameNative.CUser_GetCharacGrowType(this.CUser);
+    }
+
+    /**
+     * 获取角色觉醒职业
+     * @returns 角色觉醒职业
+     */
+    GetCharacSecondGrowType(): number {
+        return GameNative.CUser_GetCharacSecondGrowType(this.CUser);
     }
 
     /**
@@ -65,14 +116,14 @@ class User {
     /**
      * 返回选择角色界面
      */
-    CUser_ReturnToSelectCharacList(user: any): void {
-        gm.scheduleOnMainThread(GameNative.CUser_ReturnToSelectCharacList, [user, 1]);
+    CUser_ReturnToSelectCharacList(user?: any): void {
+        gm.scheduleOnMainThread(GameNative.CUser_ReturnToSelectCharacList, [user ?? this.CUser, 1]);
     }
 
     // 所有副本开王图
-    unlock_all_dungeon_difficulty(user: any): void {
+    unlock_all_dungeon_difficulty(user?: any): void {
         let a3 = Memory.allocUtf8String('3'); // 副本解锁难度: 0-3
-        GameNative.DoUserDefineCommand(user, 120, a3);
+        GameNative.DoUserDefineCommand(user ?? this.CUser, 120, a3);
     }
 }
 

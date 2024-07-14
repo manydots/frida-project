@@ -81,6 +81,15 @@ const GameNative = {
     CUser_GetCharacNo: new NativeFunction(ptr(0x080cbc4e), 'int', ['pointer'], { abi: 'sysv' }),
     // 获取角色名字
     CUser_GetCharacName: new NativeFunction(ptr(0x08101028), 'pointer', ['pointer'], { abi: 'sysv' }),
+    // 获取角色等级
+    CUser_GetCharacLevel: new NativeFunction(ptr(0x80da2b8), 'int', ['pointer'], { abi: 'sysv' }),
+    // 获取角色职业
+    CUser_GetCharacJob: new NativeFunction(ptr(0x080fdf20), 'int', ['pointer'], { abi: 'sysv' }),
+    // 获取角色转职职业
+    CUser_GetCharacGrowType: new NativeFunction(ptr(0x0815741c), 'int', ['pointer'], { abi: 'sysv' }),
+    // 获取角色觉醒职业
+    CUser_GetCharacSecondGrowType: new NativeFunction(ptr(0x0822f23c), 'int', ['pointer'], { abi: 'sysv' }),
+
     // 设置角色最大等级 int为等级
     CUser_SetUserMaxLevel: new NativeFunction(ptr(0x0868fec8), 'pointer', ['pointer', 'int'], { abi: 'sysv' }),
     CUser_CalcurateUserMaxLevel: new NativeFunction(ptr(0x0868ff04), 'pointer', ['pointer'], { abi: 'sysv' }),
