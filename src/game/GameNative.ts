@@ -81,6 +81,18 @@ const GameNative = {
     G_CDataManager: new NativeFunction(ptr(0x80cc19b), 'pointer', [], { abi: 'sysv' }),
     // 获取GameWorld实例
     G_GameWorld: new NativeFunction(ptr(0x80da3a7), 'pointer', [], { abi: 'sysv' }),
+    GameWorld_IsEnchantRevisionChannel: new NativeFunction(ptr(0x082343fc), 'int', ['pointer'], { abi: 'sysv' }),
+    // 服务器环境
+    G_CEnvironment: new NativeFunction(ptr(0x080cc181), 'pointer', [], { abi: 'sysv' }),
+    // 获取当前服务器配置文件名
+    CEnvironment_get_file_name: new NativeFunction(ptr(0x80da39a), 'pointer', ['pointer'], { abi: 'sysv' }),
+    // 城镇瞬移
+    GameWorld_Move_Area: new NativeFunction(ptr(0x86c5a84), 'pointer', ['pointer', 'pointer', 'int', 'int', 'int', 'int', 'int', 'int', 'int', 'int', 'int'], { abi: 'sysv' }),
+
+    // 将协议发给所有在线玩家(慎用! 广播类接口必须限制调用频率, 防止CC攻击)
+    // 除非必须使用, 否则改用对象更加明确的CParty::send_to_party/GameWorld::send_to_area
+    GameWorld_send_all: new NativeFunction(ptr(0x86c8c14), 'int', ['pointer', 'pointer'], { abi: 'sysv' }),
+    GameWorld_send_all_with_state: new NativeFunction(ptr(0x86c9184), 'int', ['pointer', 'pointer', 'int'], { abi: 'sysv' }),
 
     // Party
     // 获得队长
@@ -140,6 +152,10 @@ const GameNative = {
     CUser_GetPosX: new NativeFunction(ptr(0x0813492c), 'int', ['pointer'], { abi: 'sysv' }),
     // 获取角色Y轴坐标
     CUser_GetPosY: new NativeFunction(ptr(0x0813493c), 'int', ['pointer'], { abi: 'sysv' }),
+    // 发送道具
+    CUser_AddItem: new NativeFunction(ptr(0x867b6d4), 'int', ['pointer', 'int', 'int', 'int', 'pointer', 'int'], { abi: 'sysv' }),
+    // 角色增加经验
+    CUser_gain_exp_sp: new NativeFunction(ptr(0x866a3fe), 'int', ['pointer', 'int', 'pointer', 'pointer', 'int', 'int', 'int'], { abi: 'sysv' }),
 
     // 通知客户端道具更新(客户端指针, 通知方式[仅客户端=1, 世界广播=0, 小队=2, war room=3], itemSpace[装备=0, 时装=1], 道具所在的背包槽)
     CUser_SendUpdateItemList: new NativeFunction(ptr(0x867c65a), 'int', ['pointer', 'int', 'int', 'int'], { abi: 'sysv' }),
@@ -163,7 +179,31 @@ const GameNative = {
     CUser_ReturnToSelectCharacList: new NativeFunction(ptr(0x8686fee), 'int', ['pointer', 'int'], { abi: 'sysv' }),
     CUser_SendCmdErrorPacket: new NativeFunction(ptr(0x0867bf42), 'int', ['pointer', 'int', 'uint8'], { abi: 'sysv' }),
     // 发包给客户端
-    CUser_Send: new NativeFunction(ptr(0x86485ba), 'int', ['pointer', 'pointer'], { abi: 'sysv' })
+    CUser_Send: new NativeFunction(ptr(0x86485ba), 'int', ['pointer', 'pointer'], { abi: 'sysv' }),
+
+    // 获取角色背包
+    CUser_getCurCharacInvenW: new NativeFunction(ptr(0x80da28e), 'pointer', ['pointer'], { abi: 'sysv' }),
+    CUser_getCurCharacInvenR: new NativeFunction(ptr(0x80da27e), 'pointer', ['pointer'], { abi: 'sysv' }),
+
+    // 获取装备耐久
+    CEquipItem_get_endurance: new NativeFunction(ptr(0x0811ed98), 'int', ['pointer'], { abi: 'sysv' }),
+    CInventory_GetInvenData: new NativeFunction(ptr(0x084fbf2c), 'int', ['pointer', 'int', 'pointer'], { abi: 'sysv' }),
+    CInventory_get_empty_slot: new NativeFunction(ptr(0x84fb824), 'int', ['pointer', 'int', 'int'], { abi: 'sysv' }),
+
+    // 背包道具
+    Inven_Item: new NativeFunction(ptr(0x80cb854), 'pointer', ['pointer'], { abi: 'sysv' }),
+    std_pair_vector: new NativeFunction(ptr(0x81349d6), 'pointer', ['pointer'], { abi: 'sysv' }),
+    std_pair_clear: new NativeFunction(ptr(0x817a342), 'pointer', ['pointer'], { abi: 'sysv' }),
+    std_pair_make: new NativeFunction(ptr(0x81b8d41), 'pointer', ['pointer', 'pointer', 'pointer'], { abi: 'sysv' }),
+    std_pair_push_back: new NativeFunction(ptr(0x80dd606), 'pointer', ['pointer', 'pointer'], { abi: 'sysv' }),
+
+    WongWork_CMailBoxHelper_MakeSystemMultiMailPostal: new NativeFunction(ptr(0x8556a14), 'int', ['pointer', 'pointer', 'int'], { abi: 'sysv' }),
+    WongWork_CMailBoxHelper_ReqDBSendNewSystemMultiMail: new NativeFunction(
+        ptr(0x8556b68),
+        'int',
+        ['pointer', 'pointer', 'int', 'int', 'int', 'pointer', 'int', 'int', 'int', 'int'],
+        { abi: 'sysv' }
+    )
 };
 
 export default GameNative;

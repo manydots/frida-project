@@ -255,6 +255,53 @@ export default class Gmt {
         return this.MySQL_Handle[dbname] || null;
     }
 
+    // 当玩家设置屏蔽或聊天窗口中不显示指定消息类型时，就收不到对应的消息，尽量使用1/14/16这种不会被关闭的类型
+    /**
+     * 世界广播(频道内公告)
+     * @param msg 发送文本
+     * @param msg_type 消息类型 1绿(私聊) 2/9蓝(组队) 3/5白(普通)  6粉(公会) 8橙(师徒) 14管理员(喇叭) 16系统消息
+     */
+    SendNotiPacketMessage(msg: string, msg_type: number = 14): void {
+        const packet_guard = this.api_PacketGuard_PacketGuard();
+        GameNative.InterfacePacketBuf_put_header(packet_guard, 0, 12);
+        GameNative.InterfacePacketBuf_put_byte(packet_guard, msg_type);
+        GameNative.InterfacePacketBuf_put_short(packet_guard, 0);
+        GameNative.InterfacePacketBuf_put_byte(packet_guard, 0);
+        this.api_InterfacePacketBuf_put_string(packet_guard, msg);
+        GameNative.InterfacePacketBuf_finalize(packet_guard, 1);
+        GameNative.GameWorld_send_all_with_state(GameNative.G_GameWorld(), packet_guard, 3); // 只给state >= 3 的玩家发公告
+        GameNative.Destroy_PacketGuard_PacketGuard(packet_guard);
+    }
+
+    /**
+     * 频道喇叭
+     * @param msg 发送文本
+     * @param name 发送人名称
+     * @param msg_type 消息类型 类型33, ch=11必须为存在的频道
+     * @param ch 频道名称
+     */
+    SendGMMessage(msg: string, name: string = '系统公告', msg_type: number = 15, ch: number = 11): void {
+        const packet_guard = this.api_PacketGuard_PacketGuard();
+        GameNative.InterfacePacketBuf_put_header(packet_guard, 0, 118);
+        GameNative.InterfacePacketBuf_put_byte(packet_guard, msg_type); // 13频道喇叭 15服务器喇叭 33 1:1私聊
+        GameNative.InterfacePacketBuf_put_byte(packet_guard, ch);
+        GameNative.InterfacePacketBuf_put_short(packet_guard, 0);
+        this.api_InterfacePacketBuf_put_string(packet_guard, name);
+        this.api_InterfacePacketBuf_put_string(packet_guard, msg);
+        GameNative.InterfacePacketBuf_finalize(packet_guard, 1);
+
+        GameNative.GameWorld_send_all_with_state(GameNative.G_GameWorld(), packet_guard, 3); // 只给state >= 3 的玩家发公告
+        GameNative.Destroy_PacketGuard_PacketGuard(packet_guard);
+    }
+
+    /**
+     * @returns 获取当前频道文件名
+     */
+    GetEnvFileName(): any {
+        const filename = GameNative.CEnvironment_get_file_name(GameNative.G_CEnvironment());
+        return filename?.readUtf8String(-1);
+    }
+
     /**
      * 挂接消息分发线程 确保代码线程安全
      */
@@ -291,9 +338,11 @@ export default class Gmt {
             let task = task_list[i];
             let func = task[0];
             let args = task[1];
+            let pointer = task[2] ?? false;
             // 确保args是数组或类数组对象
             if (Array.isArray(args)) {
-                func.apply(this, args);
+                // scheduleOnMainThread
+                func.apply(pointer ? null : this, args);
             } else {
                 // 使用call传递单个参数
                 func.call(this, args);
@@ -305,11 +354,12 @@ export default class Gmt {
      * 在dispatcher线程执行(args为函数f的参数组成的数组, 若f无参数args可为null)
      * @param func Function gmt内部实例方法
      * @param args 参数列表
+     * @param isPointer true: func.apply(null)/false: func.apply(this)
      */
-    scheduleOnMainThread(func: Function, args: any): void {
+    scheduleOnMainThread(func: Function, args: any, isPointer: boolean = false): void {
         // 线程安全
         const guard = this.api_Guard_Mutex_Guard();
-        this.timer_dispatcher_list.push([func, args]);
+        this.timer_dispatcher_list.push([func, args, isPointer]);
         GameNative.Destroy_Guard_Mutex_Guard(guard);
         return;
     }

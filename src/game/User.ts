@@ -139,6 +139,147 @@ class User {
     }
 
     /**
+     * 给角色发道具
+     * @param item_id 物品id
+     * @param item_cnt 发送的物品数量
+     */
+    AddItem(item_id: number, item_cnt: number): void {
+        const user = this.CUser;
+        const item_space = Memory.alloc(4);
+        const slot = GameNative.CUser_AddItem(user, item_id, item_cnt, 6, item_space, 0);
+        if (slot >= 0) {
+            // console.log(slot);
+            // 通知客户端有游戏道具更新
+            GameNative.CUser_SendUpdateItemList(user, 1, item_space.readInt(), slot);
+        }
+    }
+
+    /**
+     * 给角色发经验
+     * @param exp 经验值
+     */
+    AddCharacExp(exp: number): void {
+        const user = this.CUser;
+        const a2 = Memory.alloc(4);
+        const a3 = Memory.alloc(4);
+        GameNative.CUser_gain_exp_sp(user, exp, a2, a3, 0, 0, 0);
+    }
+
+    /**
+     * 获得角色背包对象
+     */
+    GetCurCharacInvenW(): any {
+        return GameNative.CUser_getCurCharacInvenW(this.CUser);
+    }
+
+    /**
+     * 给角色发消息
+     * @param msg 发送文本
+     * @param msg_type 消息类型
+     */
+    SendNotiPacketMessage(msg: string, msg_type: number = 2): void {
+        const user = this.CUser;
+        const p = Memory.allocUtf8String(msg);
+        GameNative.CUser_SendNotiPacketMessage(user, p, msg_type);
+        return;
+    }
+
+    /**
+     * 给角色发送邮件
+     * @param charac_no 角色id
+     * @param title 邮件标题(发件人名称)
+     * @param text 邮件正文
+     * @param gold 金钱
+     * @param item_list 物品列表 [[item_id,item_cnt],...]
+     */
+    SendMail(item_list: any, charac_no?: number, title: string = 'DNF管理员', text: string = '非常感谢您的支持！', gold: number = 0): void {
+        let _charac_no = charac_no || this.GetCharacNo();
+        // 添加道具附件
+        const vector = Memory.alloc(100);
+        GameNative.std_pair_vector(vector);
+        GameNative.std_pair_clear(vector);
+        for (let i = 0; i < item_list.length; ++i) {
+            const item_id = Memory.alloc(4); // 道具id
+            const item_cnt = Memory.alloc(4); // 道具数量
+            item_id.writeInt(item_list[i][0]);
+            item_cnt.writeInt(item_list[i][1]);
+            const pair = Memory.alloc(100);
+            GameNative.std_pair_make(pair, item_id, item_cnt);
+            GameNative.std_pair_push_back(vector, pair);
+        }
+        // 邮件支持10个道具附件格子
+        const addition_slots = Memory.alloc(1000);
+        for (let i = 0; i < 10; ++i) {
+            GameNative.Inven_Item(addition_slots.add(i * 61));
+        }
+        GameNative.WongWork_CMailBoxHelper_MakeSystemMultiMailPostal(vector, addition_slots, 10);
+        const title_ptr = Memory.allocUtf8String(title); // 邮件标题
+        const text_ptr = Memory.allocUtf8String(text); // 邮件正文
+        const text_len = GameNative.strlen(text_ptr); // 邮件正文长度
+        // 发邮件给角色
+        GameNative.WongWork_CMailBoxHelper_ReqDBSendNewSystemMultiMail(title_ptr, addition_slots, item_list.length, gold, _charac_no, text_ptr, text_len, 0, 99, 1);
+    }
+
+    /**
+     * 物品信息弹窗包
+     * @param itemId 物品id
+     */
+    SendItemMessage(itemId: number): void {
+        const user = this.CUser;
+        const packet_guard = gmt.api_PacketGuard_PacketGuard();
+        GameNative.InterfacePacketBuf_clear(packet_guard);
+        GameNative.InterfacePacketBuf_put_header(packet_guard, 1, 339);
+        GameNative.InterfacePacketBuf_put_byte(packet_guard, 1);
+
+        GameNative.InterfacePacketBuf_put_int(packet_guard, itemId); // 物品id
+        GameNative.InterfacePacketBuf_put_short(packet_guard, 0);
+
+        GameNative.InterfacePacketBuf_finalize(packet_guard, 1);
+        GameNative.CUser_Send(user, packet_guard);
+        GameNative.Destroy_PacketGuard_PacketGuard(packet_guard);
+    }
+
+    /**
+     * 测试弹窗消息（客户端会崩溃，木青1031插件中修复，未测试）
+     * @param msg 发送文本
+     */
+    SendPacketMessage(msg: string): void {
+        const user = this.CUser;
+        const packet_guard = gmt.api_PacketGuard_PacketGuard();
+        GameNative.InterfacePacketBuf_put_header(packet_guard, 0, 233);
+        GameNative.InterfacePacketBuf_put_byte(packet_guard, 1);
+        GameNative.InterfacePacketBuf_put_byte(packet_guard, msg.length);
+        gmt.api_InterfacePacketBuf_put_string(packet_guard, msg);
+
+        GameNative.InterfacePacketBuf_finalize(packet_guard, 1);
+        GameNative.CUser_Send(user, packet_guard);
+        GameNative.Destroy_PacketGuard_PacketGuard(packet_guard);
+    }
+
+    /**
+     * 获取背包中指定道具数量
+     * @param item_id 物品id
+     * @returns 道具数量
+     */
+    GetItemCount(itemid: number): number {
+        if (!itemid) return 0;
+        const inven = this.GetCurCharacInvenW(); // 获取角色背包
+        const itemAddr = Memory.alloc(116);
+        const invenData = GameNative.CInventory_GetInvenData(inven, itemid, itemAddr);
+        if (invenData < 0) return 0;
+        const count = itemAddr.add(7).readU32(); // readU16 最大值65535
+        return count;
+    }
+
+    /**
+     * 角色城镇瞬移
+     */
+    Move_Area(village: number, area: number, pos_x: number, pos_y: number): void {
+        // const { village } = this.GetLocation();
+        GameNative.GameWorld_Move_Area(GameNative.G_GameWorld(), this.CUser, village, area, pos_x, pos_y, 0, 0, 0, 0, 0);
+    }
+
+    /**
      * 设置角色等级(最高70级)
      * @param new_level 角色等级
      */
@@ -173,7 +314,7 @@ class User {
      * 返回选择角色界面
      */
     ReturnToCharac(): void {
-        gmt.scheduleOnMainThread(GameNative.CUser_ReturnToSelectCharacList, [this.CUser, 1]);
+        gmt.scheduleOnMainThread(GameNative.CUser_ReturnToSelectCharacList, [this.CUser, 1], true);
     }
 
     /**

@@ -20,7 +20,6 @@ function start(): void {
     gm.hook('UnlockEmoji'); // 解锁全部表情
     // gm.hook('IgnoreNearDungeon'); // 解锁副本门口摆摊
     // gm.hook('debugCode'); // 测试代码
-    // gm.api_runScript_delay(logger, 2000, 'AAA', 'BBB'); // 延迟delay执行函数
 
     logger('=== Frida End ===');
 }

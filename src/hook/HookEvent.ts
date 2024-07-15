@@ -215,7 +215,7 @@ class _HookEvent {
      * @returns 获取当前频道文件名
      */
     api_CEnvironment_get_file_name(): any {
-        var filename = HookNative.CEnvironment_get_file_name(HookNative.G_CEnvironment());
+        const filename = HookNative.CEnvironment_get_file_name(HookNative.G_CEnvironment());
         return filename?.readUtf8String(-1);
     }
 

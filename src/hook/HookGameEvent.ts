@@ -1,8 +1,11 @@
 import hookType, { HookNative } from './HookType';
 import { INVENTORY_TYPE, ENUM_ITEMSPACE } from '../enum/enum';
 import { logger, get_timestamp, formatTime } from '../utils/tool';
+import Gmt from '@/game/Gmt';
 import Party from '@/game/Party';
 import User from '@/game/User';
+
+const gmt = Gmt.getInstance();
 
 interface Params {
     repair?: boolean; // 是否自动修理
@@ -24,17 +27,12 @@ const _HookGameEvent = {
             },
             // 原函数执行完毕, 这里可以得到并修改返回值retval
             onLeave: function (retval) {
+                let CUser = new User(this.user);
+                let characName = CUser.GetCharacName();
                 // 发送频道消息
-                // gm.api_GameWorld_SendNotiPacketMessage(`玩家[${gm.api_CUserCharacInfo_getCurCharacName(this.user)}]上线了`, 14);
-                gm.api_GameWorld_SendGMMessage(`玩家上线了`, gm.api_CUserCharacInfo_getCurCharacName(this.user), 15, 110); // 发送频道喇叭消息
-
-                // gm.api_CUser_SendNotiPacketMessage(this.user, `Hello ${gm.api_CUserCharacInfo_getCurCharacName(this.user)}`, 2); // 给角色发问候消息
-                // gm.api_SendItemMessage(this.user, 3037); // 测试弹窗物品信息 3037无色小晶体
-                // gm.api_setCurCharacStamia(this.user, 50); // 设置角色虚弱值
-                // gm.api_CUser_AddItem(this.user, 3037, 10); // 给角色发道具/api_WongWork_SendMail发送邮件
-                // gm.api_CUser_gain_exp_sp(this.user, 10000); // 给角色发经验
-                // logger(gm.api_CEnvironment_get_file_name()); // 获取当前频道文件名
-                // logger(gm.api_getItemCount(this.user, 3037)); // 获取背包中指定道具数量
+                gmt.SendNotiPacketMessage(`玩家[${characName}]上线了`); // 消息格式1
+                // gmt.SendGMMessage(`玩家上线了`, characName, 15, 110); // [角色名可添加好友]消息格式2
+                // gmt.SendGMMessage(`玩家上线了`, characName, 33, 11); // [私聊]消息格式3
             }
         });
         // 角色退出处理函数
