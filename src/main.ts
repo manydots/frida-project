@@ -1,6 +1,8 @@
 import HookEvent from './hook/HookEvent';
 import { logger } from './utils/tool';
 const gm = HookEvent.getInstance();
+import Gmt from '@/game/Gmt';
+const gmt = Gmt.getInstance();
 
 /**
  * 加载主功能
@@ -54,11 +56,11 @@ function setup(): void {
  */
 function handler_frida_db(config: string = 'frida_config.json'): void {
     // df_game_r与frida_config.json不在同级时 需要使用绝对路径加载配置文件
-    gm.local_load_config(config);
+    gmt.loadConfig(config);
     // 初始化数据库
-    gm.api_scheduleOnMainThread(gm.init_db, null);
+    gmt.scheduleOnMainThread(gmt.init_db, null);
     // 挂接消息分发线程 执行需要在主线程运行的代码
-    gm.hook_TimerDispatcher_dispatch();
+    gmt.TimerDispatcher();
 }
 
 // 入口点
@@ -154,7 +156,7 @@ rpc.exports = {
         }
     },
     dispose: function () {
-        gm.uninit_db(); // 关闭数据库连接
+        gmt.uninit_db(); // 关闭数据库连接
         logger('=== frida dispose ===');
     }
 };

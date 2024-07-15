@@ -337,6 +337,48 @@ const _HookGameEvent = {
     },
 
     /**
+     * 允许赛利亚房间的人互相可见
+     */
+    share_seria_room(): void {
+        // Hook Area::insert_user
+        Interceptor.attach(ptr(0x86c25a6), {
+            onEnter: function (args) {
+                // 修改标志位, 让服务器广播赛利亚旅馆消息
+                args[0].add(0x68).writeInt(0);
+            },
+            onLeave: function (retval) {}
+        });
+    },
+
+    /**
+     * 史诗免确认
+     */
+    cancel_epic_ok(): void {
+        Memory.patchCode(ptr(0x085a56ce).add(2), 1, function (code) {
+            const cw = new X86Writer(code, { pc: ptr(0x085a56ce).add(2) });
+            cw.putU8(9);
+            cw.flush();
+        });
+        Interceptor.attach(ptr(0x08150f18), {
+            onLeave: function (retval) {
+                // @ts-ignore
+                retval.replace(0);
+            }
+        });
+    },
+
+    /**
+     * 开启创建缔造
+     */
+    enable_createCreator(): void {
+        Memory.patchCode(ptr(0x081c029e).add(1), 1, function (code) {
+            const cw = new X86Writer(code, { pc: ptr(0x081c029e).add(1) });
+            cw.putU8(11);
+            cw.flush();
+        });
+    },
+
+    /**
      * 测试
      * @param gm HookEvent实例
      **/
