@@ -246,14 +246,20 @@ const GameNative = {
     Inven_Item_isEquipableItemType: new NativeFunction(ptr(0x08150812), 'int', ['pointer'], { abi: 'sysv' }),
     // 获取道具附加信息
     Inven_Item_get_add_info: new NativeFunction(ptr(0x80f783a), 'int', ['pointer'], { abi: 'sysv' }),
+    // 装备强化/增幅
+    Inven_Item_IncUpgrade: new NativeFunction(ptr(0x0854b4be), 'int', ['pointer'], { abi: 'sysv' }),
 
+    // 获取装备魔法封印等级
+    CEquipItem_GetRandomOptionGrade: new NativeFunction(ptr(0x8514e6e), 'int', ['pointer'], { abi: 'sysv' }),
+    CEquipItem_GetUsableEquipmentType: new NativeFunction(ptr(0x0832e036), 'int', ['pointer'], { abi: 'sysv' }),
+    CEquipItem_GetSubType: new NativeFunction(ptr(0x833eecc), 'int', ['pointer'], { abi: 'sysv' }),
     // 获取道具名
     CItem_getItemName: new NativeFunction(ptr(0x811ed82), 'pointer', ['pointer'], { abi: 'sysv' }),
     // 获取装备品级
     CItem_getRarity: new NativeFunction(ptr(0x080f12d6), 'int', ['pointer'], { abi: 'sysv' }),
     // 获取装备可穿戴等级
-    CItem_getUsableLevel: new NativeFunction(ptr(0x80f12ee), 'int', ['pointer'], { abi: 'sysv' }),
-    CItem_getAttachType: new NativeFunction(ptr(0x80f12e2), 'int', ['pointer'], { abi: 'sysv' }),
+    CItem_GetUsableLevel: new NativeFunction(ptr(0x80f12ee), 'int', ['pointer'], { abi: 'sysv' }),
+    CItem_GetAttachType: new NativeFunction(ptr(0x80f12e2), 'int', ['pointer'], { abi: 'sysv' }),
 
     CItem_GetIndex: new NativeFunction(ptr(0x8110c48), 'int', ['pointer'], { abi: 'sysv' }),
     CItem_GetGrade: new NativeFunction(ptr(0x8110c54), 'int', ['pointer'], { abi: 'sysv' }),

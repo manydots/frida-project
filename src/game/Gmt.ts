@@ -312,13 +312,15 @@ export default class Gmt {
         if (!CItem.isNull()) {
             return {
                 name: GameNative.CItem_getItemName(CItem).readUtf8String(-1),
-                rarity: GameNative.CItem_getRarity(CItem),
-                grade: GameNative.CItem_GetGrade(CItem),
+                equType: CItem.add(141 * 4).readU32(), // 装备穿戴部位
+                subType: GameNative.CEquipItem_GetSubType(CItem), // 装备小类
+                attachType: GameNative.CItem_GetAttachType(CItem), // 装备交易类型
+                rarity: GameNative.CItem_getRarity(CItem), // 装备品级
+                usable_level: GameNative.CItem_GetUsableLevel(CItem), //获取该数据中的装备使用等级// 装备使用等级
+                grade: GameNative.CItem_GetGrade(CItem), // 装备掉落等级
                 itemId: GameNative.Inven_Item_getKey(CItem),
-                index: GameNative.CItem_GetIndex(CItem),
-                price: GameNative.CItem_GetPrice(CItem),
-                groupName: GameNative.CItem_GetItemGroupName(CItem),
-                genRate: GameNative.CItem_GetGenRate(CItem)
+                price: GameNative.CItem_GetPrice(CItem), // 装备价格
+                groupName: GameNative.CItem_GetItemGroupName(CItem) // 装备具体分类
             };
         }
         return item_id.toString();

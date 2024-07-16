@@ -19,6 +19,9 @@ function start(): void {
     gm.hook('GmInput'); // 玩家指令监听
     gm.hook('UnlockEmoji'); // 解锁全部表情
     // gm.hook('IgnoreNearDungeon'); // 解锁副本门口摆摊
+    gm.hook('UpgradeItem'); // 指定增幅、强化小于(默认10)时 必成功
+    gm.hook('UseItem1'); // UseItem1消耗物品使用
+
     // gm.hook('debugCode'); // 测试代码
 
     logger('=== Frida End ===');

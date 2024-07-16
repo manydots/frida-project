@@ -10,6 +10,7 @@ const gmt = Gmt.getInstance();
 
 interface Params {
     repair?: boolean; // 是否自动修理
+    upgrade_level?: number; // 处理增幅、强化小于upgrade_level 必成功
 }
 
 const _HookGameEvent = {
@@ -153,16 +154,6 @@ const _HookGameEvent = {
         const autoRepair = params?.repair ?? false;
         const _self = this;
 
-        // 选择副本难度时, 获取难度参数
-        Interceptor.attach(ptr(hookType.Dungeon_Difficult), {
-            onEnter: function (args) {
-                const dungeonId = args[1].toInt32();
-                const dungeon_difficult = args[2].toInt32();
-                const happyParty = args[3]; // 是否进入深渊
-                logger(`[Difficult:${dungeon_difficult}][dungeonId:${dungeonId}][happyParty:${happyParty}]`);
-            }
-        });
-
         // 进入副本
         Interceptor.attach(ptr(hookType.Dungeon_Start), {
             onEnter: function (args) {
@@ -185,7 +176,18 @@ const _HookGameEvent = {
                 const CUser = new User(this.user);
                 const CPartyItem = CParty.GetDungeonItem();
                 // logger(`[Interceptor][${CPartyItem.pointer}][${CPartyItem.dungeonId}]`);
-                CUser.SendNotiPacketMessage(`进入地下城[${CPartyItem.name}] Lv.${CPartyItem.level}`, 1); // 给角色发消息
+                CUser.SendNotiPacketMessage(`进入地下城[${CPartyItem.name}] Lv.${CPartyItem.level}`, 8); // 给角色发消息
+            }
+        });
+
+        // 选择副本难度时, 获取难度参数
+        Interceptor.attach(ptr(hookType.Dungeon_Difficult), {
+            onEnter: function (args) {
+                // const CParty = args[0];
+                // const dungeonId = args[1].toInt32();
+                const dungeon_difficult = args[2].toInt32();
+                // const happyParty = args[3]; // 是否进入深渊
+                logger(`[Difficult]${dungeon_difficult}`);
             }
         });
 
@@ -258,13 +260,33 @@ const _HookGameEvent = {
                 const raw_packet_buf = gmt.api_PacketBuf_get_buf(args[2]);
                 // 解析GM DEBUG命令
                 const gm_len = raw_packet_buf.readInt();
-                const gm_text = raw_packet_buf.add(4).readUtf8String(gm_len);
-                const match = gm_text.match(pattern);
-                const matchEqu = gm_text.match(showEqu);
-                if (matchEqu && matchEqu[1] == 'equ') {
-                    _self.autoRepairEqu(user);
+                const gm_text = raw_packet_buf.add(4).readUtf8String(gm_len).slice(2);
+                logger('[GmInput]', gm_text);
+                /**
+                 * 3299 虚空魔石
+                 * 3037 无色小晶块
+                 */
+                // 以下为GM测试代码
+                if (gm_text?.includes('test')) {
+                    // console.log(gmt.GetPacketName(1, 18));
+                    // console.log(gmt.GetPacketName(0, 18));
+                    // _self.autoRepairEqu(user); // 自动修理
+                    let CUser = new User(user);
+                    CUser.Disjoint(9); // 9-24 装备前2行
+                    // logger(CUser.GetItemCount(3037));
+                    // CUser.AddItem(3299, 100); // 发送物品
+                    // CUser.SetCurCharacStamina(50); // 设置角色虚弱值
+                    // CUser.AddCharacExp(100000); // x 发送经验(此位置测试需要重新选择角色)
+                    // CUser.ChargeCera(10000); // 点券充值
+                    // CUser.ChargeCeraPoint(10000); // 代币充值
+                    // 发送邮件
+                    // CUser.SendMail([
+                    //     [3299, 1],
+                    //     [3037, 100]
+                    // ]);
+                    // let CParty = new Party(user);
+                    // CParty.ReturnToVillage();
                 }
-                logger('[GmInput]', match ? match[1] : gm_text);
             },
             onLeave: function (retval) {}
         });
@@ -282,12 +304,14 @@ const _HookGameEvent = {
         for (let slot = 10; slot <= 21; slot++) {
             const equ = GameNative.CInventory_GetInvenRef(inven, INVENTORY_TYPE.BODY, slot);
             const item_id = GameNative.Inven_Item_getKey(equ);
+            const upgrade_level = equ.add(6).readU8(); // 获取该装备的强化/增幅等级
 
             if (item_id) {
                 const itemName = gmt.GetItemName(item_id);
                 const durability = equ.add(11).readU16(); // 当前耐久
                 const item_data = gmt.FindItem(item_id);
                 const durability_max = GameNative.CEquipItem_get_endurance(item_data); // 最大耐久
+                CUser.SendNotiPacketMessage(`[${itemName}]:${upgrade_level}`, 2);
 
                 // 当前耐久小于最大耐久修理
                 if (durability_max > 0 && durability < durability_max) {
@@ -378,9 +402,50 @@ const _HookGameEvent = {
     },
 
     /**
+     * 重置强化/增幅结果
+     */
+    UpgradeItem(params?: Params): void {
+        const upgrade_level = params?.upgrade_level ?? 10;
+        Interceptor.attach(ptr(0x0854755a), {
+            onEnter: function (args) {
+                this.user = args[1];
+                this.itemData = args[2];
+                this.upgrade_level = this.itemData.add(6).readU8(); // 获取该装备的强化/增幅等级
+            },
+            onLeave: function (retval) {
+                // @ts-ignore
+                if (retval == 0 && this.upgrade_level <= upgrade_level) {
+                    // 强化失败
+                    logger(`Upgrade Fail,Retval Success.`);
+                    GameNative.Inven_Item_IncUpgrade(this.itemData);
+                    // @ts-ignore
+                    retval.replace(1); // 返回强化成功
+                }
+                // @ts-ignore
+                logger(`[Upgrade]${retval == 0 ? 'Fail' : 'Success'}`);
+            }
+        });
+    },
+
+    /**
+     * useItem物品使用
+     */
+    UseItem1(): void {
+        // __cdecl CParty::useItem(CParty *__hidden this, CUser *, const Inven_Item *)
+        Interceptor.attach(ptr(hookType.UseItem1), {
+            onEnter: function (args) {
+                // logger(args[0], args[1]);
+                // const item_id = GameNative.Inven_Item_getKey(args[1]);
+                logger(`[UseItem1]${args[0]}`);
+            },
+            onLeave: function (retval) {}
+        });
+    },
+
+    /**
      * 测试
      **/
-    debugCode(params?: object): void {
+    debugCode(params?: Params): void {
         logger('[debugCode]', JSON.stringify(params || {}));
     }
 };

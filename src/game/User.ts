@@ -169,8 +169,13 @@ class User {
      * @param callee CUser谁的分解机  传null表示诺顿
      */
     Disjoint(space: any, slot: number = ENUM_ITEMSPACE.INVENTORY, callee: any = null) {
+        // if (this.GetCurCharacExpertJob() == 0) {
+        //     gmt.SendNotiPacketMessage('注意： 副职业没有开启！', 16);
+        //     return;
+        // }
         const user = this.CUser;
         GameNative.DisPatcher_DisJointItem_disjoint(user, space, slot, 239, callee || user, 0xffff);
+        GameNative.CUser_SendUpdateItemList(user, 1, slot, space);
     }
 
     /**

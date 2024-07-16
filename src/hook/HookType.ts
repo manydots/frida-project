@@ -16,6 +16,7 @@ import _HookNative from './HookNative'; // hook NativeFunction
  *  @param Unseal_Equipment 魔法封印自动解封/分解时装
  *  @param GmInput 玩家指令监听
  *  @param Unlock_Emoji 解锁全部表情
+ *  @param UseItem1 useItem1道具使用
  *
  */
 enum _HookType {
@@ -28,9 +29,10 @@ enum _HookType {
     Dungeon_GiveUp = 0x081c40b4, // 放弃副本
     Dungeon_Difficult = 0x085a0954, // 获取副本难度
     Dungeon_Mob_Die = 0x085b5a4c, // 副本房间怪物死亡
-    Dungeon_Clear = 0x085b2412, // 副本通关(会触发2次???)
+    Dungeon_Clear = 0x085b2412, // 副本通关(会触发2次)
     Dungeon_Finish = 0x085ad278, // 副本完成(翻牌通关经验奖励)
     CParty_Get_Item = 0x085b949c, // 捡取道具
+    UseItem1 = 0x085a7800, // useItem1道具使用
 
     GmInput = 0x0820bbde, // 玩家指令监听
     Unlock_Emoji1 = 0x080e5ca6, // 解锁全部表情
