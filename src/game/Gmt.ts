@@ -295,6 +295,70 @@ export default class Gmt {
     }
 
     /**
+     * 获取道具数据
+     * @param item_id 物品id
+     */
+    FindItem(item_id: number): any {
+        return GameNative.CDataManager_find_item(GameNative.G_CDataManager(), item_id);
+    }
+
+    /**
+     * 获取道具详情
+     * @param item_id 道具id
+     * @returns 道具详情
+     */
+    GetItemDetail(item_id?: any, CItem?: any): any {
+        CItem = !CItem ? this.FindItem(item_id) : CItem;
+        if (!CItem.isNull()) {
+            return {
+                name: GameNative.CItem_getItemName(CItem).readUtf8String(-1),
+                rarity: GameNative.CItem_getRarity(CItem),
+                grade: GameNative.CItem_GetGrade(CItem),
+                itemId: GameNative.Inven_Item_getKey(CItem),
+                index: GameNative.CItem_GetIndex(CItem),
+                price: GameNative.CItem_GetPrice(CItem),
+                groupName: GameNative.CItem_GetItemGroupName(CItem),
+                genRate: GameNative.CItem_GetGenRate(CItem)
+            };
+        }
+        return item_id.toString();
+    }
+
+    /**
+     * 获取道具名称
+     * @param item_id 道具id
+     * @returns 道具名称
+     */
+    GetItemName(item_id: any): any {
+        const CItem = this.FindItem(item_id);
+        if (!CItem.isNull()) {
+            return GameNative.CItem_getItemName(CItem).readUtf8String(-1);
+        }
+        return item_id.toString();
+    }
+
+    /**
+     * 获取包名
+     * @param type  0 or 1
+     * @param id integer
+     */
+    GetPacketName(type: number, id: number): any {
+        const p = GameNative.Get_PacketName(type, id);
+        if (p.isNull()) {
+            return '';
+        }
+        return p.readUtf8String(-1);
+    }
+
+    /**
+     * 返回选择角色界面
+     * @param user User指针
+     */
+    ReturnToCharac(user: any): void {
+        this.scheduleOnMainThread(GameNative.CUser_ReturnToSelectCharacList, [user, 1], true);
+    }
+
+    /**
      * @returns 获取当前频道文件名
      */
     GetEnvFileName(): any {
@@ -373,6 +437,17 @@ export default class Gmt {
         logger('[Gmt.args]', arg?.a1);
     }
 
+    /***********************以下为系统工具函数*******************************/
+    /**
+     * Frida.version版本
+     */
+    echoVersion(): void {
+        // const base_address = ptr(0x1ac790c);
+        // const offset = 0x258;
+        // const target_address = base_address.add(offset);
+        logger('[version]', Frida.version);
+    }
+
     /**
      * 读取文件
      * @param path 文件路径
@@ -400,5 +475,13 @@ export default class Gmt {
     loadConfig(path: string): void {
         const data = this.readFile(path, 'r', 10 * 1024 * 1024);
         this.global_config = JSON.parse(data ?? '{}');
+    }
+
+    /**
+     * 获取系统UTC时间(秒)
+     * @returns 系统UTC时间(秒)
+     */
+    getSysUTCSec() {
+        return GameNative.GlobalData_systemTime.readInt();
     }
 }

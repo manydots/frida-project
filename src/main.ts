@@ -1,7 +1,7 @@
 import HookEvent from './hook/HookEvent';
+import Gmt from '@/game/Gmt';
 import { logger } from './utils/tool';
 const gm = HookEvent.getInstance();
-import Gmt from '@/game/Gmt';
 const gmt = Gmt.getInstance();
 
 /**
@@ -10,7 +10,7 @@ const gmt = Gmt.getInstance();
 function start(): void {
     logger('=== Frida Start ===');
 
-    gm.echoVersion(); // 打印Frida.version
+    gmt.echoVersion(); // 打印Frida.version
     // gm.hook('historyLog'); // 捕获玩家游戏日志
     gm.hook('userLogout'); // 角色登入登出处理
     gm.hook('autoUnsealEquipment'); // 魔法封印自动解封/分解时装 辅助检查CParty_Item_Slot

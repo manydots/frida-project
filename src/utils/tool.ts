@@ -91,16 +91,6 @@ function get_random_int(min: number, max: number): number {
 }
 
 /**
- * Frida.version版本
- */
-function echoVersion(): void {
-    // const base_address = ptr(0x1ac790c);
-    // const offset = 0x258;
-    // const target_address = base_address.add(offset);
-    logger('[version]', Frida.version);
-}
-
-/**
  * 内存十六进制打印
  */
 function bin2hex(p: any, len: any): any {
@@ -114,4 +104,4 @@ function bin2hex(p: any, len: any): any {
     return hex;
 }
 
-export { logger, formatTime, get_timestamp, get_random_int, echoVersion, bin2hex };
+export { logger, formatTime, get_timestamp, get_random_int, bin2hex };

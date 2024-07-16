@@ -32,6 +32,32 @@ const GameNative = {
     // 服务器内置定时器队列
     G_TimerQueue: new NativeFunction(ptr(0x80f647c), 'pointer', [], { abi: 'sysv' }),
 
+    // 获取包名
+    Get_PacketName: new NativeFunction(ptr(0x082a2112), 'pointer', ['int', 'int'], { abi: 'sysv' }),
+    // 获取系统时间
+    CSystemTime_getCurSec: new NativeFunction(ptr(0x80cbc9e), 'int', ['pointer'], { abi: 'sysv' }),
+    GlobalData_systemTime: ptr(0x941f714),
+
+    // 获取DataManager实例
+    G_CDataManager: new NativeFunction(ptr(0x80cc19b), 'pointer', [], { abi: 'sysv' }),
+    // 获取装备pvf数据
+    CDataManager_find_item: new NativeFunction(ptr(0x835fa32), 'pointer', ['pointer', 'int'], { abi: 'sysv' }),
+    // 获取GameWorld实例
+    G_GameWorld: new NativeFunction(ptr(0x80da3a7), 'pointer', [], { abi: 'sysv' }),
+    GameWorld_IsEnchantRevisionChannel: new NativeFunction(ptr(0x082343fc), 'int', ['pointer'], { abi: 'sysv' }),
+    // 服务器环境
+    G_CEnvironment: new NativeFunction(ptr(0x080cc181), 'pointer', [], { abi: 'sysv' }),
+    get_server_group: new NativeFunction(ptr(0x08106ce0), 'pointer', [], { abi: 'sysv' }),
+    // 获取当前服务器配置文件名
+    CEnvironment_get_file_name: new NativeFunction(ptr(0x80da39a), 'pointer', ['pointer'], { abi: 'sysv' }),
+    // 城镇瞬移
+    GameWorld_Move_Area: new NativeFunction(ptr(0x86c5a84), 'pointer', ['pointer', 'pointer', 'int', 'int', 'int', 'int', 'int', 'int', 'int', 'int', 'int'], { abi: 'sysv' }),
+
+    // 将协议发给所有在线玩家(慎用! 广播类接口必须限制调用频率, 防止CC攻击)
+    // 除非必须使用, 否则改用对象更加明确的CParty::send_to_party/GameWorld::send_to_area
+    GameWorld_send_all: new NativeFunction(ptr(0x86c8c14), 'int', ['pointer', 'pointer'], { abi: 'sysv' }),
+    GameWorld_send_all_with_state: new NativeFunction(ptr(0x86c9184), 'int', ['pointer', 'pointer', 'int'], { abi: 'sysv' }),
+
     // MYSQL操作
     // 游戏中已打开的数据库索引(游戏数据库非线程安全 谨慎操作)
     DBMgr_GetDBHandle: new NativeFunction(ptr(0x83f523e), 'pointer', ['pointer', 'int', 'int'], { abi: 'sysv' }),
@@ -76,23 +102,6 @@ const GameNative = {
     Destroy_PacketGuard_PacketGuard: new NativeFunction(ptr(0x858de80), 'int', ['pointer'], { abi: 'sysv' }),
     InterfacePacketBuf_clear: new NativeFunction(ptr(0x080cb8e6), 'int', ['pointer'], { abi: 'sysv' }),
     InterfacePacketBuf_put_packet: new NativeFunction(ptr(0x0815098e), 'int', ['pointer', 'pointer'], { abi: 'sysv' }),
-
-    // 获取DataManager实例
-    G_CDataManager: new NativeFunction(ptr(0x80cc19b), 'pointer', [], { abi: 'sysv' }),
-    // 获取GameWorld实例
-    G_GameWorld: new NativeFunction(ptr(0x80da3a7), 'pointer', [], { abi: 'sysv' }),
-    GameWorld_IsEnchantRevisionChannel: new NativeFunction(ptr(0x082343fc), 'int', ['pointer'], { abi: 'sysv' }),
-    // 服务器环境
-    G_CEnvironment: new NativeFunction(ptr(0x080cc181), 'pointer', [], { abi: 'sysv' }),
-    // 获取当前服务器配置文件名
-    CEnvironment_get_file_name: new NativeFunction(ptr(0x80da39a), 'pointer', ['pointer'], { abi: 'sysv' }),
-    // 城镇瞬移
-    GameWorld_Move_Area: new NativeFunction(ptr(0x86c5a84), 'pointer', ['pointer', 'pointer', 'int', 'int', 'int', 'int', 'int', 'int', 'int', 'int', 'int'], { abi: 'sysv' }),
-
-    // 将协议发给所有在线玩家(慎用! 广播类接口必须限制调用频率, 防止CC攻击)
-    // 除非必须使用, 否则改用对象更加明确的CParty::send_to_party/GameWorld::send_to_area
-    GameWorld_send_all: new NativeFunction(ptr(0x86c8c14), 'int', ['pointer', 'pointer'], { abi: 'sysv' }),
-    GameWorld_send_all_with_state: new NativeFunction(ptr(0x86c9184), 'int', ['pointer', 'pointer', 'int'], { abi: 'sysv' }),
 
     // Party
     // 获得队长
@@ -203,7 +212,62 @@ const GameNative = {
         'int',
         ['pointer', 'pointer', 'int', 'int', 'int', 'pointer', 'int', 'int', 'int', 'int'],
         { abi: 'sysv' }
-    )
+    ),
+    // 点券充值
+    WongWork_IPG_CIPGHelper_IPGInput: new NativeFunction(
+        ptr(0x80ffca4),
+        'int',
+        ['pointer', 'pointer', 'int', 'int', 'pointer', 'pointer', 'pointer', 'pointer', 'pointer', 'pointer'],
+        { abi: 'sysv' }
+    ),
+    // 同步点券数据库
+    WongWork_IPG_CIPGHelper_IPGQuery: new NativeFunction(ptr(0x8100790), 'int', ['pointer', 'pointer'], { abi: 'sysv' }),
+    // 代币充值
+    WongWork_IPG_CIPGHelper_IPGInputPoint: new NativeFunction(ptr(0x80fffc0), 'int', ['pointer', 'pointer', 'int', 'int', 'pointer', 'pointer'], { abi: 'sysv' }),
+
+    // 分解机参数:角色 位置 背包类型  239  角色（谁的） 0xFFFF
+    DisPatcher_DisJointItem_disjoint: new NativeFunction(ptr(0x81f92ca), 'int', ['pointer', 'int', 'int', 'int', 'pointer', 'int'], { abi: 'sysv' }),
+    // 分解机用户的状态 参数 用户 239 背包类型 位置
+    CUser_GetCurCharacExpertJob: new NativeFunction(ptr(0x0822f8d4), 'int', ['pointer'], { abi: 'sysv' }),
+    // 副职业类型
+    CUser_GetCurCharacExpertJobType: new NativeFunction(ptr(0x0822f894), 'int', ['pointer'], { abi: 'sysv' }),
+    // 副职业经验
+    CUser_GetCurCharacExpertJobExp: new NativeFunction(ptr(0x08375026), 'int', ['pointer'], { abi: 'sysv' }),
+
+    // 检查背包中道具是否为空
+    Inven_Item_isEmpty: new NativeFunction(ptr(0x811ed66), 'int', ['pointer'], { abi: 'sysv' }),
+    // 获取背包中道具item_id
+    Inven_Item_getKey: new NativeFunction(ptr(0x850d14e), 'int', ['pointer'], { abi: 'sysv' }),
+    // 获取背包槽中的道具 INVENTORY_TYPE
+    CInventory_GetInvenRef: new NativeFunction(ptr(0x84fc1de), 'pointer', ['pointer', 'int', 'int'], { abi: 'sysv' }),
+    // 背包中删除道具(背包指针, 背包类型, 槽, 数量, 删除原因, 记录删除日志)
+    CInventory_delete_item: new NativeFunction(ptr(0x850400c), 'int', ['pointer', 'int', 'int', 'int', 'int', 'int'], { abi: 'sysv' }),
+    // 道具是否是装备
+    Inven_Item_isEquipableItemType: new NativeFunction(ptr(0x08150812), 'int', ['pointer'], { abi: 'sysv' }),
+    // 获取道具附加信息
+    Inven_Item_get_add_info: new NativeFunction(ptr(0x80f783a), 'int', ['pointer'], { abi: 'sysv' }),
+
+    // 获取道具名
+    CItem_getItemName: new NativeFunction(ptr(0x811ed82), 'pointer', ['pointer'], { abi: 'sysv' }),
+    // 获取装备品级
+    CItem_getRarity: new NativeFunction(ptr(0x080f12d6), 'int', ['pointer'], { abi: 'sysv' }),
+    // 获取装备可穿戴等级
+    CItem_getUsableLevel: new NativeFunction(ptr(0x80f12ee), 'int', ['pointer'], { abi: 'sysv' }),
+    CItem_getAttachType: new NativeFunction(ptr(0x80f12e2), 'int', ['pointer'], { abi: 'sysv' }),
+
+    CItem_GetIndex: new NativeFunction(ptr(0x8110c48), 'int', ['pointer'], { abi: 'sysv' }),
+    CItem_GetGrade: new NativeFunction(ptr(0x8110c54), 'int', ['pointer'], { abi: 'sysv' }),
+    CItem_GetPrice: new NativeFunction(ptr(0x822c84a), 'int', ['pointer'], { abi: 'sysv' }),
+    CItem_GetGenRate: new NativeFunction(ptr(0x822c84a), 'int', ['pointer'], { abi: 'sysv' }),
+    CItem_GetNeedLevel: new NativeFunction(ptr(0x8545fda), 'int', ['pointer'], { abi: 'sysv' }),
+    CItem_GetItemGroupName: new NativeFunction(ptr(0x80f1312), 'int', ['pointer'], { abi: 'sysv' }),
+    CItem_GetUpSkillType: new NativeFunction(ptr(0x8545fcc), 'int', ['pointer'], { abi: 'sysv' }),
+    CItem_GetGetExpertJobCompoundMaterialVariation: new NativeFunction(ptr(0x850d292), 'int', ['pointer'], { abi: 'sysv' }),
+    CItem_GetExpertJobCompoundRateVariation: new NativeFunction(ptr(0x850d2aa), 'int', ['pointer'], { abi: 'sysv' }),
+    CItem_GetExpertJobCompoundResultVariation: new NativeFunction(ptr(0x850d2c2), 'int', ['pointer'], { abi: 'sysv' }),
+    CItem_GetExpertJobSelfDisjointBigWinRate: new NativeFunction(ptr(0x850d2de), 'int', ['pointer'], { abi: 'sysv' }),
+    CItem_GetExpertJobSelfDisjointResultVariation: new NativeFunction(ptr(0x850d2f6), 'int', ['pointer'], { abi: 'sysv' }),
+    CItem_GetExpertJobAdditionalExp: new NativeFunction(ptr(0x850d30e), 'int', ['pointer'], { abi: 'sysv' })
 };
 
 export default GameNative;

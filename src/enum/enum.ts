@@ -7,6 +7,14 @@ enum ItemRarity {
     epic = 4,
     chronicle = 5
 }
+// 副本难度
+const Difficult = {
+    0: '普通级',
+    1: '冒险级',
+    2: '王者级',
+    3: '地狱级',
+    4: '英雄级'
+};
 
 enum GlobMask {
     FLAG_EQUIP = 0x01, // 装备位
@@ -37,7 +45,14 @@ enum ENUM_ITEMSPACE {
     INVENTORY = 0, // 物品栏
     AVATAR = 1, // 时装栏
     CARGO = 2, // 仓库
+    QUIPPED = 3,
+    TRADE = 4,
+    PRIVATE_STORE = 5,
+    MAIL = 6,
     CREATURE = 7, // 宠物栏
+    COMPOUND_AVATAR = 8,
+    USE_EMBLEM = 9,
+    AVATAR_CONVERT = 10,
     ACCOUNT_CARGO = 12 // 账号仓库
 }
 
@@ -58,4 +73,4 @@ enum VILLAGEATTACK_STATE {
     END = 3 // 活动已结束
 }
 
-export { ItemRarity, GlobMask, ExpertJobType, INVENTORY_TYPE, ENUM_ITEMSPACE, QUEST_gRADE, VILLAGEATTACK_STATE };
+export { ItemRarity, Difficult, GlobMask, ExpertJobType, INVENTORY_TYPE, ENUM_ITEMSPACE, QUEST_gRADE, VILLAGEATTACK_STATE };

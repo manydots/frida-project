@@ -1,6 +1,4 @@
 import GameNative from './GameNative';
-import { logger } from '../utils/tool';
-// import User from './User';
 
 /**
  * @param pointer 角色User指针
@@ -16,23 +14,12 @@ interface CPartyMember {
 }
 
 class Party {
-    private static instance: Party; // 私有静态属性
     private CUser: any = null; // User指针
 
     // 构造函数
     constructor(user: any) {
         this.CUser = user;
     }
-
-    /**
-     * 获取当前角色所在的CParty
-     * @returns CParty
-     */
-    // GetCParty(): any {
-    //     const CUser = new User(this.CUser);
-    //     const CParty = CUser.GetParty();
-    //     return CParty;
-    // }
 
     /**
      * 获取当前队伍信息

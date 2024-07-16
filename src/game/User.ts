@@ -1,26 +1,14 @@
 import GameNative from './GameNative';
+import { ENUM_ITEMSPACE } from '@/enum/enum';
 import Gmt from './Gmt';
 const gmt: Gmt = Gmt.getInstance();
 
 class User {
-    private static instance: User; // 私有静态属性
     private CUser: any = null; // User指针
 
     // 构造函数
     constructor(user: any) {
         this.CUser = user;
-    }
-
-    /**
-     * 获取User实例
-     * @param user User指针
-     * @returns User实例
-     */
-    static getInstance(user: any): User {
-        if (!User.instance) {
-            User.instance = new User(user);
-        }
-        return User.instance;
     }
 
     /**
@@ -166,6 +154,61 @@ class User {
     }
 
     /**
+     * 检查副职业是否开启
+     *  - 副职业对象(分解机摆摊才有值)
+     */
+    GetCurCharacExpertJob(): number {
+        const user = this.CUser;
+        return GameNative.CUser_GetCurCharacExpertJob(user);
+    }
+
+    /**
+     * 分解道具
+     * @param space 装备位置 ItemSpace
+     * @param slot 背包类型 默认 INVENTORY 物品栏
+     * @param callee CUser谁的分解机  传null表示诺顿
+     */
+    Disjoint(space: any, slot: number = ENUM_ITEMSPACE.INVENTORY, callee: any = null) {
+        const user = this.CUser;
+        GameNative.DisPatcher_DisJointItem_disjoint(user, space, slot, 239, callee || user, 0xffff);
+    }
+
+    /**
+     * 点券充值 (禁止直接修改billing库所有表字段, 点券相关操作务必调用数据库存储过程!)
+     * @param amount 点券数量
+     */
+    ChargeCera(amount: number): void {
+        const user = this.CUser;
+        // 充值
+        GameNative.WongWork_IPG_CIPGHelper_IPGInput(
+            ptr(0x941f734).readPointer(),
+            user,
+            5,
+            amount,
+            ptr(0x8c7fa20),
+            ptr(0x8c7fa20),
+            Memory.allocUtf8String('GM'),
+            ptr(0),
+            ptr(0),
+            ptr(0)
+        );
+        // 通知客户端充值结果
+        GameNative.WongWork_IPG_CIPGHelper_IPGQuery(ptr(0x941f734).readPointer(), user);
+    }
+
+    /**
+     * 代币充值
+     * @param amount 代币数量
+     */
+    ChargeCeraPoint(amount: number): void {
+        const user = this.CUser;
+        // 充值
+        GameNative.WongWork_IPG_CIPGHelper_IPGInputPoint(ptr(0x941f734).readPointer(), user, amount, 4, ptr(0), ptr(0));
+        // 通知客户端充值结果
+        GameNative.WongWork_IPG_CIPGHelper_IPGQuery(ptr(0x941f734).readPointer(), user);
+    }
+
+    /**
      * 获得角色背包对象
      */
     GetCurCharacInvenW(): any {
@@ -283,7 +326,7 @@ class User {
      * 设置角色等级(最高70级)
      * @param new_level 角色等级
      */
-    SetMaxLevel(new_level: number = 60): void {
+    SetCharacLevel(new_level: number = 60): void {
         if (new_level < 0 || new_level > 70) {
             throw new Error(`Invalid Level value: ${new_level}. Level must be between 0 and 70.`);
         }
@@ -301,20 +344,23 @@ class User {
      */
     changeJob(new_job: number, new_growtype: number): void {
         const user = this.CUser;
-        this.SetMaxLevel(this.GetCharacLevel()); // 设置角色等级(原等级)
+        this.SetCharacLevel(this.GetCharacLevel()); // 设置角色等级(原等级)
         // 在数据库中修改角色职业和转职
-        const characNo = GameNative.CUser_GetCharacNo(user);
+        const characNo = this.GetCharacNo();
         const mysql_taiwan_cain = gmt.getMySQLHandle('taiwan_cain');
         gmt.api_MySQL_exec(mysql_taiwan_cain, `update charac_info set job=${new_job}, grow_type=${new_growtype} where charac_no=${characNo};`);
         // 返回选择角色界面
-        this.ReturnToCharac();
+        gmt.ReturnToCharac(user);
     }
 
     /**
-     * 返回选择角色界面
+     * 转职与觉醒
+     * @param first_grow_type 转职类型 growType[0-7]
+     * @param second_grow_type 觉醒进度, 0=未觉醒, 1=觉醒, 2=二次觉醒
+     * @param reason integer
      */
-    ReturnToCharac(): void {
-        gmt.scheduleOnMainThread(GameNative.CUser_ReturnToSelectCharacList, [this.CUser, 1], true);
+    ChangeGrowType(first_grow_type: number, second_grow_type: number = 1, reason: number = 1): void {
+        console.log(first_grow_type, second_grow_type, reason);
     }
 
     /**
