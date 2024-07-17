@@ -234,6 +234,8 @@ const GameNative = {
     // 副职业经验
     CUser_GetCurCharacExpertJobExp: new NativeFunction(ptr(0x08375026), 'int', ['pointer'], { abi: 'sysv' }),
 
+    // 删除背包槽中的道具
+    Inven_Item_reset: new NativeFunction(ptr(0x080cb7d8), 'int', ['pointer'], { abi: 'sysv' }),
     // 检查背包中道具是否为空
     Inven_Item_isEmpty: new NativeFunction(ptr(0x811ed66), 'int', ['pointer'], { abi: 'sysv' }),
     // 获取背包中道具item_id

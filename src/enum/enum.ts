@@ -7,6 +7,7 @@ enum ItemRarity {
     epic = 4,
     chronicle = 5
 }
+
 // 副本难度
 const Difficult = {
     0: '普通级',

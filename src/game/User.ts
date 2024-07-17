@@ -1,5 +1,5 @@
 import GameNative from './GameNative';
-import { ENUM_ITEMSPACE } from '@/enum/enum';
+import { ENUM_ITEMSPACE, INVENTORY_TYPE } from '@/enum/enum';
 import Gmt from './Gmt';
 const gmt: Gmt = Gmt.getInstance();
 
@@ -317,6 +317,64 @@ class User {
         if (invenData < 0) return 0;
         const count = itemAddr.add(7).readU32(); // readU16 最大值65535
         return count;
+    }
+
+    /**
+     * 清空角色邮箱(重新选择角色生效)
+     * @param returnToCharac 是否返回选择角色界面
+     */
+    clearLetter(returnToCharac: boolean = true): void {
+        const user = this.CUser;
+        // 从数据库中删除该用户所有邮件
+        const characNo = this.GetCharacNo();
+        const mysql_taiwan_cain_2nd = gmt.getMySQLHandle('taiwan_cain_2nd');
+        // delete_flag
+        gmt.api_MySQL_exec(mysql_taiwan_cain_2nd, `delete from letter where charac_no=${characNo};`);
+        gmt.api_MySQL_exec(mysql_taiwan_cain_2nd, `delete from postal where receive_charac_no=${characNo};`);
+        this.SendNotiPacketMessage(`[${gmt.get_timestamp()}]已清空角色邮箱`, 1);
+        // 返回选择角色界面
+        returnToCharac && gmt.ReturnToCharac(user);
+    }
+
+    /**
+     * 清空时装栏(重新选择角色生效)
+     * @param returnToCharac 是否返回选择角色界面
+     */
+    clearAvartar(returnToCharac: boolean = true): void {
+        const user = this.CUser;
+        // 从数据库中删除该用户所有时装
+        const characNo = this.GetCharacNo();
+        const mysql_taiwan_cain_2nd = gmt.getMySQLHandle('taiwan_cain_2nd');
+        // gmt.api_MySQL_exec(mysql_taiwan_cain_2nd, `delete from user_items where charac_no=${characNo};`);
+        gmt.api_MySQL_exec(mysql_taiwan_cain_2nd, `update user_items set stat = 1 where charac_no=${characNo};`);
+        this.SendNotiPacketMessage(`[${gmt.get_timestamp()}]已清空角色时装`, 1);
+        // 返回选择角色界面
+        returnToCharac && gmt.ReturnToCharac(user);
+    }
+
+    /**
+     * 清理宠物栏(重新选择角色生效)
+     * @param returnToCharac 是否返回选择角色界面
+     */
+    clearCreature(returnToCharac: boolean = true) {
+        const user = this.CUser;
+        // 从数据库中删除该用户宠物
+        const characNo = this.GetCharacNo();
+        const mysql_taiwan_cain_2nd = gmt.getMySQLHandle('taiwan_cain_2nd');
+        gmt.api_MySQL_exec(mysql_taiwan_cain_2nd, `delete from creature_items where charac_no=${characNo};`);
+        const inven = this.GetCurCharacInvenW(); // 获取角色背包
+        //遍历宠物装备背包
+        for (let slot = 0; slot <= 241; slot++) {
+            // 根据格子获取道具
+            const inven_item = GameNative.CInventory_GetInvenRef(inven, INVENTORY_TYPE.CREATURE, slot);
+            // 删除该道具
+            GameNative.Inven_Item_reset(inven_item);
+        }
+        // 通知客户端更新背包
+        GameNative.CUser_SendItemSpace(user, INVENTORY_TYPE.CREATURE);
+        this.SendNotiPacketMessage(`[${gmt.get_timestamp()}]已清空角色宠物`, 1);
+        // 返回选择角色界面
+        returnToCharac && gmt.ReturnToCharac(user);
     }
 
     /**
