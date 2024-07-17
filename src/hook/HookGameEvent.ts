@@ -5,12 +5,19 @@ import gmt from '@/game/Gmt';
 import Party from '@/game/Party';
 import User from '@/game/User';
 
+import UseEmblem from './UseEmblem'; // 修复时装镶嵌
+
 interface Params {
     repair?: boolean; // 是否自动修理
     upgrade_level?: number; // 处理增幅、强化小于upgrade_level 必成功
 }
 
 const HookGameEvent = {
+    /**
+     *  修复时装镶嵌
+     */
+    UseEmblem: UseEmblem,
+
     /**
      *  角色登入登出处理
      */
@@ -42,6 +49,7 @@ const HookGameEvent = {
             onLeave: function (retval) {}
         });
     },
+
     /**
      * hook捕获玩家游戏日志
      */
@@ -57,6 +65,7 @@ const HookGameEvent = {
             onLeave: function (retval) {}
         });
     },
+
     /**
      * 服务端把稀有度超过5 retval.replace(3) 解决需要2个PVF问题
      */
@@ -100,6 +109,7 @@ const HookGameEvent = {
             }
         });
     },
+
     /**
      * 角色在地下城副本中拾取物品
      **/
@@ -143,6 +153,7 @@ const HookGameEvent = {
             onLeave: function (retval) {}
         });
     },
+
     /**
      * 获取副本通关时长
      **/
@@ -241,6 +252,7 @@ const HookGameEvent = {
             }
         });
     },
+
     /**
      * 玩家指令监听
      **/
@@ -268,8 +280,8 @@ const HookGameEvent = {
                     // console.log(gmt.GetPacketName(1, 18));
                     // console.log(gmt.GetPacketName(0, 18));
                     // _self.autoRepairEqu(user); // 自动修理
-                    let CUser = new User(user);
-                    CUser.Disjoint(9); // 9-24 装备前2行
+                    // let CUser = new User(user);
+                    // CUser.Disjoint(9); // 9-24 装备前2行
                     // gmt.logger(CUser.GetItemCount(3037));
                     // CUser.AddItem(3299, 100); // 发送物品
                     // CUser.SetCurCharacStamina(50); // 设置角色虚弱值

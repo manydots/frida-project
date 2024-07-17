@@ -9,6 +9,7 @@ function start(): void {
 
     gmt.echoVersion(); // 打印Frida.version
     // gm.hook('historyLog'); // 捕获玩家游戏日志
+    gm.hook('UseEmblem'); // 修复时装镶嵌
     gm.hook('userLogout'); // 角色登入登出处理
     gm.hook('autoUnsealEquipment'); // 魔法封印自动解封/分解时装 辅助检查CParty_Item_Slot
     gm.hook('CPartyGetPlayTick', { repair: true }); // 获取副本通关时长

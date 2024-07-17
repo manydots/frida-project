@@ -195,6 +195,11 @@ class Gmt {
         return null;
     }
 
+    // 获取时装在数据库中的uid
+    api_get_avartar_ui_id(avartar: any): any {
+        return avartar.add(7).readInt();
+    }
+
     // 初始化数据库(打开数据库/建库建表/数据库字段扩展)
     init_db(): void {
         // 配置文件

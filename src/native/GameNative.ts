@@ -183,6 +183,12 @@ const GameNative = {
     CUser_DimensionInoutUpdate: new NativeFunction(ptr(0x8656c12), 'int', ['pointer', 'int', 'int'], { abi: 'sysv' }),
     // 道具是否被锁
     CUser_CheckItemLock: new NativeFunction(ptr(0x8646942), 'int', ['pointer', 'int', 'int'], { abi: 'sysv' }),
+    // 道具是否为消耗品
+    CItem_is_stackable: new NativeFunction(ptr(0x80f12fa), 'int', ['pointer'], { abi: 'sysv' }),
+    // 获取消耗品类型
+    CStackableItem_GetItemType: new NativeFunction(ptr(0x8514a84), 'int', ['pointer'], { abi: 'sysv' }),
+    // 获取徽章支持的镶嵌槽类型
+    CStackableItem_getJewelTargetSocket: new NativeFunction(ptr(0x0822ca28), 'int', ['pointer'], { abi: 'sysv' }),
 
     // 返回选择角色界面
     CUser_ReturnToSelectCharacList: new NativeFunction(ptr(0x8686fee), 'int', ['pointer', 'int'], { abi: 'sysv' }),
@@ -250,6 +256,13 @@ const GameNative = {
     Inven_Item_get_add_info: new NativeFunction(ptr(0x80f783a), 'int', ['pointer'], { abi: 'sysv' }),
     // 装备强化/增幅
     Inven_Item_IncUpgrade: new NativeFunction(ptr(0x0854b4be), 'int', ['pointer'], { abi: 'sysv' }),
+
+    // 获取时装管理器
+    CInventory_GetAvatarItemMgrR: new NativeFunction(ptr(0x80dd576), 'pointer', ['pointer'], { abi: 'sysv' }),
+    // 获取时装插槽数据
+    WongWork_CAvatarItemMgr_getJewelSocketData: new NativeFunction(ptr(0x82f98f8), 'pointer', ['pointer', 'int'], { abi: 'sysv' }),
+    // 时装镶嵌数据存盘
+    DB_UpdateAvatarJewelSlot_makeRequest: new NativeFunction(ptr(0x843081c), 'pointer', ['int', 'int', 'pointer'], { abi: 'sysv' }),
 
     // 获取装备魔法封印等级
     CEquipItem_GetRandomOptionGrade: new NativeFunction(ptr(0x8514e6e), 'int', ['pointer'], { abi: 'sysv' }),
