@@ -1,5 +1,5 @@
-import hookType from './HookType';
-import GameNative from '@/game/GameNative';
+import hookType from '@/enum/HookType';
+import GameNative from '@/native/GameNative';
 import { INVENTORY_TYPE } from '@/enum/enum';
 import Gmt from '@/game/Gmt';
 import Party from '@/game/Party';

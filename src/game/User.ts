@@ -1,4 +1,4 @@
-import GameNative from './GameNative';
+import GameNative from '@/native/GameNative';
 import { ENUM_ITEMSPACE, INVENTORY_TYPE } from '@/enum/enum';
 import Gmt from './Gmt';
 const gmt: Gmt = Gmt.getInstance();

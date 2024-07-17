@@ -1,5 +1,5 @@
 // NativeFunction
-const _HookNative = {
+const HookNative = {
     // 点券充值
     WongWork_IPG_CIPGHelper_IPGInput: new NativeFunction(
         ptr(0x80ffca4),
@@ -233,4 +233,4 @@ const _HookNative = {
     MySQL_blob_to_str: new NativeFunction(ptr(0x83f452a), 'pointer', ['pointer', 'int', 'pointer', 'int'], { abi: 'sysv' })
 };
 
-export default _HookNative;
+export default HookNative;

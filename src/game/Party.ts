@@ -1,4 +1,4 @@
-import GameNative from './GameNative';
+import GameNative from '@/native/GameNative';
 
 /**
  * @param pointer 角色User指针

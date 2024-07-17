@@ -1,7 +1,7 @@
 /**
  * 系统工具类
  */
-import GameNative from './GameNative';
+import GameNative from '@/native/GameNative';
 
 export default class Gmt {
     static instance: Gmt; // 私有静态属性
