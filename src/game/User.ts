@@ -1,7 +1,6 @@
 import GameNative from '@/native/GameNative';
 import { ENUM_ITEMSPACE, INVENTORY_TYPE } from '@/enum/enum';
-import Gmt from './Gmt';
-const gmt: Gmt = Gmt.getInstance();
+import gmt from './Gmt';
 
 class User {
     private CUser: any = null; // User指针

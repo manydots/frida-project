@@ -1,7 +1,5 @@
-import HookEvent from './hook/HookEvent';
-import Gmt from '@/game/Gmt';
-const gm = HookEvent.getInstance();
-const gmt = Gmt.getInstance();
+import gm from '@/hook/HookEvent';
+import gmt from '@/game/Gmt';
 
 /**
  * 加载主功能

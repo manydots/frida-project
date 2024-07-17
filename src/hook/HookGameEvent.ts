@@ -1,18 +1,16 @@
 import hookType from '@/enum/HookType';
 import GameNative from '@/native/GameNative';
 import { INVENTORY_TYPE } from '@/enum/enum';
-import Gmt from '@/game/Gmt';
+import gmt from '@/game/Gmt';
 import Party from '@/game/Party';
 import User from '@/game/User';
-
-const gmt = Gmt.getInstance();
 
 interface Params {
     repair?: boolean; // 是否自动修理
     upgrade_level?: number; // 处理增幅、强化小于upgrade_level 必成功
 }
 
-const _HookGameEvent = {
+const HookGameEvent = {
     /**
      *  角色登入登出处理
      */
@@ -449,4 +447,4 @@ const _HookGameEvent = {
     }
 };
 
-export default _HookGameEvent;
+export default HookGameEvent;

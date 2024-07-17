@@ -3,7 +3,7 @@
  */
 import GameNative from '@/native/GameNative';
 
-export default class Gmt {
+class Gmt {
     static instance: Gmt; // 私有静态属性
 
     public global_config: any = {};
@@ -582,3 +582,7 @@ export default class Gmt {
         return GameNative.GlobalData_systemTime.readInt();
     }
 }
+
+// export default Gmt;
+// 默认导出 Gmt.instance
+export default Gmt.getInstance();

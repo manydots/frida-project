@@ -1,8 +1,8 @@
-import { logger } from '../utils/tool';
+import { logger } from '@/utils/tool';
 import hookGameEvent from './HookGameEvent';
 
 // 定义HookEvent类
-class _HookEvent {
+class HookEvent {
     static instance: any = null; // 私有静态属性
     private eventHandlers: any = hookGameEvent; // 挂载游戏事件hook
 
@@ -13,10 +13,10 @@ class _HookEvent {
      * 获取HookEvent实例(单例模式)
      */
     static getInstance(): any {
-        if (!_HookEvent.instance) {
-            _HookEvent.instance = new _HookEvent();
+        if (!HookEvent.instance) {
+            HookEvent.instance = new HookEvent();
         }
-        return _HookEvent.instance;
+        return HookEvent.instance;
     }
 
     /**
@@ -35,4 +35,6 @@ class _HookEvent {
     }
 }
 
-export default _HookEvent;
+// export default HookEvent;
+// 默认导出 HookEvent.instance
+export default HookEvent.getInstance();
