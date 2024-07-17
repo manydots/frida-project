@@ -29,7 +29,7 @@ function api_set_JewelSocketData(jewelSocketData: any, slot: any, emblem_item_id
  * 0725 是 1.1200.4.1 支持
  * 1031 是 1.1260.5.1 支持
  * */
-function fix_use_emblem() {
+function fix_use_emblem(): void {
     // Dispatcher_UseJewel::dispatch_sig
     Interceptor.attach(ptr(0x8217bd6), {
         onEnter: function (args) {

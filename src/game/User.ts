@@ -344,8 +344,18 @@ class User {
         // 从数据库中删除该用户所有时装
         const characNo = this.GetCharacNo();
         const mysql_taiwan_cain_2nd = gmt.getMySQLHandle('taiwan_cain_2nd');
-        // gmt.api_MySQL_exec(mysql_taiwan_cain_2nd, `delete from user_items where charac_no=${characNo};`);
-        gmt.api_MySQL_exec(mysql_taiwan_cain_2nd, `update user_items set stat = 1 where charac_no=${characNo};`);
+        // gmt.api_MySQL_exec(mysql_taiwan_cain_2nd, `delete from user_items where charac_no=${characNo} AND slot >= 10;`); // 清除非穿戴
+        gmt.api_MySQL_exec(mysql_taiwan_cain_2nd, `update user_items set stat = 1 where charac_no=${characNo} AND slot >= 10;`); // 数据库slot + 10
+        const inven = this.GetCurCharacInvenW(); // 获取角色背包
+        // 遍历时装背包 数据库slot + 10, slot=0 时装背包第一个格子
+        for (let slot = 0; slot < 104; slot++) {
+            // 根据格子获取道具
+            const inven_item = GameNative.CInventory_GetInvenRef(inven, INVENTORY_TYPE.AVARTAR, slot);
+            // 删除该道具
+            GameNative.Inven_Item_reset(inven_item);
+        }
+        // 通知客户端更新背包
+        GameNative.CUser_SendItemSpace(user, ENUM_ITEMSPACE.AVATAR);
         this.SendNotiPacketMessage(`[${gmt.get_timestamp()}]已清空角色时装`, 1);
         // 返回选择角色界面
         returnToCharac && gmt.ReturnToCharac(user);
@@ -362,7 +372,7 @@ class User {
         const mysql_taiwan_cain_2nd = gmt.getMySQLHandle('taiwan_cain_2nd');
         gmt.api_MySQL_exec(mysql_taiwan_cain_2nd, `delete from creature_items where charac_no=${characNo};`);
         const inven = this.GetCurCharacInvenW(); // 获取角色背包
-        //遍历宠物装备背包
+        // 遍历宠物装备背包
         for (let slot = 0; slot <= 241; slot++) {
             // 根据格子获取道具
             const inven_item = GameNative.CInventory_GetInvenRef(inven, INVENTORY_TYPE.CREATURE, slot);
@@ -370,7 +380,7 @@ class User {
             GameNative.Inven_Item_reset(inven_item);
         }
         // 通知客户端更新背包
-        GameNative.CUser_SendItemSpace(user, INVENTORY_TYPE.CREATURE);
+        GameNative.CUser_SendItemSpace(user, ENUM_ITEMSPACE.CREATURE);
         this.SendNotiPacketMessage(`[${gmt.get_timestamp()}]已清空角色宠物`, 1);
         // 返回选择角色界面
         returnToCharac && gmt.ReturnToCharac(user);

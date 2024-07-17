@@ -281,6 +281,7 @@ const HookGameEvent = {
                     // console.log(gmt.GetPacketName(0, 18));
                     // _self.autoRepairEqu(user); // 自动修理
                     // let CUser = new User(user);
+                    // CUser.clearAvartar();
                     // CUser.Disjoint(9); // 9-24 装备前2行
                     // gmt.logger(CUser.GetItemCount(3037));
                     // CUser.AddItem(3299, 100); // 发送物品
