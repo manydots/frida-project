@@ -533,6 +533,19 @@ export default class Gmt {
     }
 
     /**
+     * 延迟delay执行函数
+     * @param func Function
+     * @param args 参数列表
+     * @param delay 延迟时间
+     */
+    RunScript_delay(func: Function, delay: number, ...args: any[]): void {
+        let _self = this;
+        setTimeout(() => {
+            func.call(_self, args);
+        }, delay);
+    }
+
+    /**
      * 读取文件
      * @param path 文件路径
      * @param mode 文件读取模式
