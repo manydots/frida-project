@@ -1,6 +1,5 @@
 import HookEvent from './hook/HookEvent';
 import Gmt from '@/game/Gmt';
-import { logger } from './utils/tool';
 const gm = HookEvent.getInstance();
 const gmt = Gmt.getInstance();
 
@@ -8,7 +7,7 @@ const gmt = Gmt.getInstance();
  * 加载主功能
  */
 function start(): void {
-    logger('=== Frida Start ===');
+    gmt.logger('=== Frida Start ===');
 
     gmt.echoVersion(); // 打印Frida.version
     // gm.hook('historyLog'); // 捕获玩家游戏日志
@@ -24,7 +23,7 @@ function start(): void {
 
     // gm.hook('debugCode'); // 测试代码
 
-    logger('=== Frida End ===');
+    gmt.logger('=== Frida End ===');
 }
 
 /**
@@ -72,7 +71,7 @@ function frida_main(ls: any, _args: any): number {
     // 建议约定lua和js通讯采用json格式
     const args = _args.readUtf8String();
     // 在这里做你需要的事情
-    logger(`frida main, args = ${args}`);
+    gmt.logger(`frida main, args = ${args}`);
     return 0;
 }
 
@@ -122,7 +121,7 @@ function handler_communication(): void {
     Interceptor.replace(addr, new NativeCallback(frida_handler, 'int', ['pointer', 'int', 'float', 'pointer']));
 
     Interceptor.flush();
-    logger('frida setup ok');
+    gmt.logger('frida setup ok');
 }
 
 /**
@@ -132,7 +131,7 @@ function awake(): void {
     Interceptor.attach(ptr(0x829ea5a), {
         onEnter: function (args) {},
         onLeave: function (retval) {
-            logger('=== frida awake load ===');
+            gmt.logger('=== frida awake load ===');
             setup();
         }
     });
@@ -140,7 +139,7 @@ function awake(): void {
 
 rpc.exports = {
     init: function (stage, parameters) {
-        logger('frida init ' + stage);
+        gmt.logger('frida init ' + stage);
         // 延迟加载
         if (stage == 'early') {
             // 配合dp2.8+使用
@@ -153,12 +152,12 @@ rpc.exports = {
             }
         } else {
             // 热重载
-            logger('=== frida reload ===');
+            gmt.logger('=== frida reload ===');
             setup();
         }
     },
     dispose: function () {
         gmt.uninit_db(); // 关闭数据库连接
-        logger('=== frida dispose ===');
+        gmt.logger('=== frida dispose ===');
     }
 };

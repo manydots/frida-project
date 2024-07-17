@@ -1,7 +1,6 @@
 import hookType from './HookType';
 import GameNative from '@/game/GameNative';
 import { INVENTORY_TYPE } from '@/enum/enum';
-import { logger, formatTime } from '@/utils/tool';
 import Gmt from '@/game/Gmt';
 import Party from '@/game/Party';
 import User from '@/game/User';
@@ -24,7 +23,7 @@ const _HookGameEvent = {
             onEnter: function (args) {
                 // 保存函数参数
                 this.user = args[1];
-                logger(`[Reach_GameWorld][user]${this.user}`);
+                gmt.logger(`[Reach_GameWorld][user]${this.user}`);
             },
             // 原函数执行完毕, 这里可以得到并修改返回值retval
             onLeave: function (retval) {
@@ -40,7 +39,7 @@ const _HookGameEvent = {
         Interceptor.attach(ptr(hookType.Leave_GameWorld), {
             onEnter: function (args) {
                 const user = args[0];
-                logger(`[Leave_GameWorld][user]${user}`);
+                gmt.logger(`[Leave_GameWorld][user]${user}`);
             },
             onLeave: function (retval) {}
         });
@@ -55,7 +54,7 @@ const _HookGameEvent = {
                 const history_log = args[1].readUtf8String(-1);
                 const group = history_log?.split(',');
                 const game_event = group ? group[13].slice(1) : null; // 玩家游戏事件 删除多余空格
-                logger(`[HistoryLog]${game_event}`);
+                gmt.logger(`[HistoryLog]${game_event}`);
             },
             onLeave: function (retval) {}
         });
@@ -99,7 +98,7 @@ const _HookGameEvent = {
                     user_map_obj[characNo] = {};
                 }
                 user_map_obj[characNo].cparty_item_slot = slot;
-                logger('[CParty_Item_Slot]', slot);
+                gmt.logger('[CParty_Item_Slot]', slot);
             }
         });
     },
@@ -138,7 +137,7 @@ const _HookGameEvent = {
                 // 0白装 1蓝装 2紫装 3粉装 4异界？ 5史诗
                 const ItemRarity = GameNative.CItem_getRarity(itemData); // 稀有度
                 // 装备数量不可以通过 num 获取
-                logger('ItemRarity', ItemRarity);
+                gmt.logger('ItemRarity', ItemRarity);
                 if (ItemRarity >= 2) {
                     gmt.SendNotiPacketMessage(`恭喜「${charac_name}」捡起了传说中的[${item_name}]${num}个`, 14);
                 }
@@ -164,7 +163,7 @@ const _HookGameEvent = {
                     user_map_obj[characNo] = {};
                 }
                 user_map_obj[characNo].startTime = gmt.getSysUTCSec();
-                logger(`[Dungeon_Start]${[this.user]}`);
+                gmt.logger(`[Dungeon_Start]${[this.user]}`);
 
                 // 开启自动修理
                 if (autoRepair) {
@@ -175,7 +174,7 @@ const _HookGameEvent = {
                 const CParty = new Party(this.user);
                 const CUser = new User(this.user);
                 const CPartyItem = CParty.GetDungeonItem();
-                // logger(`[Interceptor][${CPartyItem.pointer}][${CPartyItem.dungeonId}]`);
+                // gmt.logger(`[Interceptor][${CPartyItem.pointer}][${CPartyItem.dungeonId}]`);
                 CUser.SendNotiPacketMessage(`进入地下城[${CPartyItem.name}] Lv.${CPartyItem.level}`, 8); // 给角色发消息
             }
         });
@@ -187,7 +186,7 @@ const _HookGameEvent = {
                 // const dungeonId = args[1].toInt32();
                 const dungeon_difficult = args[2].toInt32();
                 // const happyParty = args[3]; // 是否进入深渊
-                logger(`[Difficult]${dungeon_difficult}`);
+                gmt.logger(`[Difficult]${dungeon_difficult}`);
             }
         });
 
@@ -198,7 +197,7 @@ const _HookGameEvent = {
                 const CUser = new User(this.user);
                 const characNo = CUser.GetCharacNo();
                 user_map_obj[characNo] = null;
-                logger(`[Dungeon_GiveUp]${[this.user]}`);
+                gmt.logger(`[Dungeon_GiveUp]${[this.user]}`);
             }
         });
 
@@ -207,7 +206,7 @@ const _HookGameEvent = {
         //     onEnter: function (args) {
         //         this.user = args[1];
         //         const monster_id = args[2].toInt32();
-        //         logger(`[Dungeon_Mob_Die]${[monster_id]}`);
+        //         gmt.logger(`[Dungeon_Mob_Die]${[monster_id]}`);
         //     },
         //     onLeave: function (retval) {}
         // });
@@ -218,7 +217,7 @@ const _HookGameEvent = {
                 this.user = args[1];
             },
             onLeave: function (retval) {
-                logger(`[Dungeon_Clear]${[this.user]}`);
+                gmt.logger(`[Dungeon_Clear]${[this.user]}`);
             }
         });
 
@@ -229,7 +228,7 @@ const _HookGameEvent = {
                 const CUser = new User(this.user);
                 const CParty = new Party(this.user);
 
-                logger(`[Dungeon_Finish]${[this.user]}`);
+                gmt.logger(`[Dungeon_Finish]${[this.user]}`);
                 const characNo = CUser.GetCharacNo();
                 const dungeonName = CParty.GetDungeonName();
                 const endTime = gmt.getSysUTCSec();
@@ -239,7 +238,7 @@ const _HookGameEvent = {
                 if (duration && startTime && endTime && duration > 0) {
                     user_map_obj[characNo].startTime = null;
                     user_map_obj[characNo].duration = duration;
-                    gmt.SendNotiPacketMessage(`玩家[${CUser.GetCharacName()}]${formatTime(duration)}通关了地下城[${dungeonName}]`, 16);
+                    gmt.SendNotiPacketMessage(`玩家[${CUser.GetCharacName()}]${gmt.formatTime(duration)}通关了地下城[${dungeonName}]`, 16);
                 }
             }
         });
@@ -261,7 +260,7 @@ const _HookGameEvent = {
                 // 解析GM DEBUG命令
                 const gm_len = raw_packet_buf.readInt();
                 const gm_text = raw_packet_buf.add(4).readUtf8String(gm_len).slice(2);
-                logger('[GmInput]', gm_text);
+                gmt.logger('[GmInput]', gm_text);
                 /**
                  * 3299 虚空魔石
                  * 3037 无色小晶块
@@ -273,7 +272,7 @@ const _HookGameEvent = {
                     // _self.autoRepairEqu(user); // 自动修理
                     let CUser = new User(user);
                     CUser.Disjoint(9); // 9-24 装备前2行
-                    // logger(CUser.GetItemCount(3037));
+                    // gmt.logger(CUser.GetItemCount(3037));
                     // CUser.AddItem(3299, 100); // 发送物品
                     // CUser.SetCurCharacStamina(50); // 设置角色虚弱值
                     // CUser.AddCharacExp(100000); // x 发送经验(此位置测试需要重新选择角色)
@@ -316,7 +315,7 @@ const _HookGameEvent = {
                 // 当前耐久小于最大耐久修理
                 if (durability_max > 0 && durability < durability_max) {
                     CUser.SendNotiPacketMessage(`[${itemName}]：耐久[${durability}]`, 2); // 给角色发消息
-                    // logger(`[${item_id}]durability:${durability}`);
+                    // gmt.logger(`[${item_id}]durability:${durability}`);
                     equ.add(11).writeU16(max ?? durability_max); // 写入耐久
                     // (客户端指针, 通知方式[仅客户端=1, 世界广播=0, 小队=2, war room=3], itemSpace[装备=0, 时装=1], 道具所在的背包槽)
                     // GameNative.CUser_SendUpdateItemList(user, 0, ENUM_ITEMSPACE.INVENTORY, slot);
@@ -416,13 +415,13 @@ const _HookGameEvent = {
                 // @ts-ignore
                 if (retval == 0 && this.upgrade_level <= upgrade_level) {
                     // 强化失败
-                    logger(`Upgrade Fail,Retval Success.`);
+                    gmt.logger(`Upgrade Fail,Retval Success.`);
                     GameNative.Inven_Item_IncUpgrade(this.itemData);
                     // @ts-ignore
                     retval.replace(1); // 返回强化成功
                 }
                 // @ts-ignore
-                logger(`[Upgrade]${retval == 0 ? 'Fail' : 'Success'}`);
+                gmt.logger(`[Upgrade]${retval == 0 ? 'Fail' : 'Success'}`);
             }
         });
     },
@@ -434,9 +433,9 @@ const _HookGameEvent = {
         // __cdecl CParty::useItem(CParty *__hidden this, CUser *, const Inven_Item *)
         Interceptor.attach(ptr(hookType.UseItem1), {
             onEnter: function (args) {
-                // logger(args[0], args[1]);
+                // gmt.logger(args[0], args[1]);
                 // const item_id = GameNative.Inven_Item_getKey(args[1]);
-                logger(`[UseItem1]${args[0]}`);
+                gmt.logger(`[UseItem1]${args[0]}`);
             },
             onLeave: function (retval) {}
         });
@@ -446,7 +445,7 @@ const _HookGameEvent = {
      * 测试
      **/
     debugCode(params?: Params): void {
-        logger('[debugCode]', JSON.stringify(params || {}));
+        gmt.logger('[debugCode]', JSON.stringify(params || {}));
     }
 };
 
