@@ -415,7 +415,7 @@ const HookGameEvent = {
      * 重置强化/增幅结果
      */
     UpgradeItem(params?: Params): void {
-        const upgrade_level = params?.upgrade_level ?? 10;
+        const upgrade_level = params?.upgrade_level ?? 8;
         Interceptor.attach(ptr(0x0854755a), {
             onEnter: function (args) {
                 this.user = args[1];
@@ -444,9 +444,11 @@ const HookGameEvent = {
         // __cdecl CParty::useItem(CParty *__hidden this, CUser *, const Inven_Item *)
         Interceptor.attach(ptr(hookType.UseItem1), {
             onEnter: function (args) {
-                // gmt.logger(args[0], args[1]);
-                // const item_id = GameNative.Inven_Item_getKey(args[1]);
-                gmt.logger(`[UseItem1]${args[0]}`);
+                this.user = args[1];
+                const item_id = GameNative.Inven_Item_getKey(args[2]);
+                const CUser = new User(this.user);
+                const CParty = new Party(this.user);
+                CUser.SendNotiPacketMessage(`玩家[${CUser.GetCharacName()}]在地下城[${CParty.GetDungeonName()}]中使用了[${gmt.GetItemName(item_id)}]物品`, 8);
             },
             onLeave: function (retval) {}
         });
