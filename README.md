@@ -190,7 +190,7 @@ node test.js
 // Webpack5 构建后会包裹箭头函数
 ```
 
-#### 2.8 数据连接异常请检查frida_config.json文件
+#### 2.8 数据库连接异常请检查frida_config.json文件
 
 #### 3.项目结构
 

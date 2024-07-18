@@ -10,14 +10,14 @@ function start(): void {
     gmt.echoVersion(); // 打印Frida.version
     // gm.hook('historyLog'); // 捕获玩家游戏日志
     gm.hook('UseEmblem'); // 修复时装镶嵌
-    gm.hook('userLogout'); // 角色登入登出处理
+    gm.hook('userLogout', { first_login_gift: true }); // 角色登入登出处理 true发送当日首次登录福利
     gm.hook('autoUnsealEquipment'); // 魔法封印自动解封/分解时装 辅助检查CParty_Item_Slot
     gm.hook('CPartyGetPlayTick', { repair: true }); // 获取副本通关时长
     gm.hook('CPartyGetItem'); // 副本获取道具
     gm.hook('GmInput'); // 玩家指令监听
     gm.hook('UnlockEmoji'); // 解锁全部表情
     // gm.hook('IgnoreNearDungeon'); // 解锁副本门口摆摊
-    gm.hook('UpgradeItem'); // 指定增幅、强化小于(默认10)时 必成功
+    gm.hook('UpgradeItem'); // 指定增幅、强化小于(默认8)时 必成功
     gm.hook('UseItem1'); // UseItem1消耗物品使用
 
     // gm.hook('debugCode'); // 测试代码

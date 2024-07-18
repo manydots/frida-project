@@ -108,9 +108,10 @@ const GameNative = {
     CParty_GetManager: new NativeFunction(ptr(0x08145780), 'pointer', ['pointer'], { abi: 'sysv' }),
     // 获取队伍中玩家
     CParty_GetUser: new NativeFunction(ptr(0x08145764), 'pointer', ['pointer', 'int'], { abi: 'sysv' }),
-
     // 返回城镇
     CParty_ReturnToVillage: new NativeFunction(ptr(0x085aca60), 'int', ['pointer'], { abi: 'sysv' }),
+    // TODO 获取副本难度
+    CParty_GetDungeonDiff: new NativeFunction(ptr(0x082a5a24), 'int', ['pointer'], { abi: 'sysv' }),
 
     CDataManager_find_dungeon: new NativeFunction(ptr(0x0835f9f8), 'pointer', ['pointer', 'int'], { abi: 'sysv' }),
     // 获取当前玩家所在副本
