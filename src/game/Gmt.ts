@@ -586,6 +586,17 @@ class Gmt {
     getSysUTCSec() {
         return GameNative.GlobalData_systemTime.readInt();
     }
+
+    /**
+     * 获取当日零点时间
+     * @returns 零点UTC时间(秒)
+     */
+    getDayZeroUTCSec() {
+        const now = new Date();
+        now.setHours(0, 0, 0, 0);
+        // 将毫秒级时间戳转换为秒级时间戳
+        return Math.floor(now.getTime() / 1000);
+    }
 }
 
 // export default Gmt;

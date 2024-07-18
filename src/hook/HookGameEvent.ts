@@ -8,8 +8,9 @@ import User from '@/game/User';
 import UseEmblem from './UseEmblem'; // 修复时装镶嵌
 
 interface Params {
-    repair?: boolean; // 是否自动修理
-    upgrade_level?: number; // 处理增幅、强化小于upgrade_level 必成功
+    repair?: boolean; // 是否自动修理 默认false
+    first_login_gift?: boolean; // 是否开启当日首次登录福利 默认false
+    upgrade_level?: number; // 处理增幅/强化小于[upgrade_level]必成功 默认+8
 }
 
 const HookGameEvent = {
@@ -21,7 +22,8 @@ const HookGameEvent = {
     /**
      *  角色登入登出处理
      */
-    userLogout(): void {
+    userLogout(params?: Params): void {
+        const first_login_gift = params?.first_login_gift ?? false; // 默认false, 仅记录登录日志
         // 选择角色处理函数
         Interceptor.attach(ptr(hookType.Reach_GameWorld), {
             // 函数入口, 拿到函数参数args
@@ -38,6 +40,9 @@ const HookGameEvent = {
                 gmt.SendNotiPacketMessage(`玩家[${characName}]上线了`); // 消息格式1
                 // gmt.SendGMMessage(`玩家上线了`, characName, 15, 110); // [角色名可添加好友]消息格式2
                 // gmt.SendGMMessage(`玩家上线了`, characName, 33, 11); // [私聊]消息格式3
+
+                // 发送每日首次登录福利
+                CUser.FirstLoginGift(first_login_gift);
             }
         });
         // 角色退出处理函数

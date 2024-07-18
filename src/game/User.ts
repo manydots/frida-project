@@ -304,6 +304,73 @@ class User {
     }
 
     /**
+     * 根据账号id查询frida.dp_login登录日志
+     *  - 未查询到当日用户登录记录 发放每日福利
+     * @param first_login_gift 是否发送账号首次登录奖励
+     */
+    FirstLoginGift(first_login_gift: boolean = false): void {
+        const accId = this.GetAccId();
+        const characNo = this.GetCharacNo();
+        const mysql_frida = gmt.getMySQLHandle('frida');
+        const dayZeroUTCSec = gmt.getDayZeroUTCSec(); // 获取当日零点时间
+        let first_login_id = null; // 账号登录日志id
+        // 从数据库中查询该账号当日的登录记录
+        if (gmt.api_MySQL_exec(mysql_frida, `SELECT id FROM dp_login WHERE uid = ${accId} AND first_login_time >= ${dayZeroUTCSec};`)) {
+            if (GameNative.MySQL_get_n_rows(mysql_frida) == 1) {
+                if (GameNative.MySQL_fetch(mysql_frida)) {
+                    first_login_id = gmt.api_MySQL_get_str(mysql_frida, 0);
+                }
+            }
+        }
+
+        if (first_login_id) {
+            gmt.logger(`[FirstLoginLog]${first_login_id ?? null}`);
+            this.SendNotiPacketMessage(`\n当日非首次登录`);
+        } else {
+            // 写入首次登录日志
+            gmt.api_MySQL_exec(mysql_frida, `INSERT INTO dp_login(uid, cid, first_login_time, create_time) VALUES (${accId}, ${characNo}, ${gmt.getSysUTCSec()}, NOW());`);
+            // 发送首次登录奖励
+            if (first_login_gift) {
+                /**
+                 * 发送邮件奖励(仅支持10个道具附件格子)
+                 * 3299 虚空魔石
+                 * 3037 无色小晶块
+                 */
+                this.SendMail(
+                    [
+                        [3037, 10000],
+                        [3299, 10]
+                    ],
+                    characNo,
+                    'DNF管理员',
+                    '当日首次登录奖励',
+                    12345
+                );
+            }
+        }
+    }
+
+    /**
+     * 测试查询多条记录[测试代码@吴克大哥]
+     * @returns 查询记录
+     */
+    DebugFetchMySQL(): any[] {
+        let result = []; // 查询记录
+        const mysql_frida = gmt.getMySQLHandle('frida');
+
+        gmt.api_MySQL_exec(mysql_frida, `SELECT id, uid FROM dp_login WHERE id < 20 LIMIT 10;`);
+        const count = GameNative.MySQL_get_n_rows(mysql_frida);
+
+        if (count > 0) {
+            for (let i = 0; i < count; i++) {
+                GameNative.MySQL_fetch(mysql_frida);
+                result.push({ id: gmt.api_MySQL_get_int(mysql_frida, 0), uid: gmt.api_MySQL_get_int(mysql_frida, 1) });
+            }
+        }
+        return result;
+    }
+
+    /**
      * 获取背包中指定道具数量
      * @param item_id 物品id
      * @returns 道具数量
