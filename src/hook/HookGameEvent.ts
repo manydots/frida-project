@@ -299,8 +299,8 @@ const HookGameEvent = {
                     //     [3299, 1],
                     //     [3037, 100]
                     // ]);
-                    // let CParty = new Party(user);
-                    // CParty.ReturnToVillage();
+                    let CParty = new Party(user);
+                    CParty.ReturnToVillage();
                 }
             },
             onLeave: function (retval) {}
@@ -443,7 +443,7 @@ const HookGameEvent = {
     },
 
     /**
-     * useItem物品使用
+     * 地下城中消耗品使用(含无色)
      */
     UseItem1(): void {
         // __cdecl CParty::useItem(CParty *__hidden this, CUser *, const Inven_Item *)
@@ -453,7 +453,7 @@ const HookGameEvent = {
                 const item_id = GameNative.Inven_Item_getKey(args[2]);
                 const CUser = new User(this.user);
                 const CParty = new Party(this.user);
-                CUser.SendNotiPacketMessage(`玩家[${CUser.GetCharacName()}]在地下城[${CParty.GetDungeonName()}]中使用了[${gmt.GetItemName(item_id)}]物品`, 8);
+                CUser.SendNotiPacketMessage(`玩家[${CUser.GetCharacName()}]在地下城[${CParty.GetDungeonName()}]中使用了[${gmt.GetItemName(item_id)}]`, 1);
             },
             onLeave: function (retval) {}
         });

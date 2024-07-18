@@ -66,9 +66,9 @@ class Party {
     }
 
     /**
-     * TODO 获取副本难度
+     * 获取副本难度[废弃]
      */
-    GetDungeonDiff(): number {
+    GetDungeonDiff(): any {
         return GameNative.CParty_GetDungeonDiff(this.GetParty());
     }
 

@@ -221,21 +221,21 @@ class Gmt {
         this.api_MySQL_exec(db_handle.taiwan_cain, 'create database if not exists frida default charset utf8;');
         let mysql_frida = db_handle.frida;
 
-        if (mysql_frida == null) {
-            db_handle.frida = this.api_MYSQL_open('frida', db_ip, db_port, db_account, db_password);
-        } else {
-            // 建表frida.game_event
-            this.api_MySQL_exec(
-                mysql_frida,
-                'CREATE TABLE game_event (event_id varchar(30) NOT NULL, event_info mediumtext NULL, PRIMARY KEY (event_id)) ENGINE=InnoDB DEFAULT CHARSET=utf8;'
-            );
-
-            // 建表frida.dp_login
-            this.api_MySQL_exec(
-                mysql_frida,
-                'CREATE TABLE if not exists frida.dp_login(id INT(10) not null primary key AUTO_INCREMENT, uid INT(10) default 0 not null, cid INT(10) default 0 not null, first_login_time INT(10) UNSIGNED default 0 not null, create_time DATETIME DEFAULT NULL)'
-            );
+        if (!mysql_frida) {
+            mysql_frida = db_handle.frida = this.api_MYSQL_open('frida', db_ip, db_port, db_account, db_password);
         }
+
+        // 建表frida.game_event
+        this.api_MySQL_exec(
+            mysql_frida,
+            'CREATE TABLE if not exists game_event (event_id varchar(30) NOT NULL, event_info mediumtext NULL, PRIMARY KEY (event_id)) ENGINE=InnoDB DEFAULT CHARSET=utf8;'
+        );
+
+        // 建表frida.dp_login
+        this.api_MySQL_exec(
+            mysql_frida,
+            'CREATE TABLE if not exists dp_login(id INT(10) not null primary key AUTO_INCREMENT, uid INT(10) default 0 not null, cid INT(10) default 0 not null, first_login_time INT(10) UNSIGNED default 0 not null, create_time DATETIME DEFAULT NULL);'
+        );
     }
 
     // 关闭数据库（卸载插件前调用）

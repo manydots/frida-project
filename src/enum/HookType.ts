@@ -14,7 +14,7 @@
  *  @param Unseal_Equipment 魔法封印自动解封/分解时装
  *  @param GmInput 玩家指令监听
  *  @param Unlock_Emoji 解锁全部表情
- *  @param UseItem1 useItem1道具使用
+ *  @param UseItem1 地下城中消耗品使用(含无色)
  *
  */
 enum HookType {
@@ -30,7 +30,7 @@ enum HookType {
     Dungeon_Clear = 0x085b2412, // 副本通关(会触发2次)
     Dungeon_Finish = 0x085ad278, // 副本完成(翻牌通关经验奖励)
     CParty_Get_Item = 0x085b949c, // 捡取道具
-    UseItem1 = 0x085a7800, // useItem1道具使用
+    UseItem1 = 0x085a7800, // 地下城中消耗品使用(含无色)
 
     GmInput = 0x0820bbde, // 玩家指令监听
     Unlock_Emoji1 = 0x080e5ca6, // 解锁全部表情
