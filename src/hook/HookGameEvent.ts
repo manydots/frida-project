@@ -36,6 +36,8 @@ const HookGameEvent = {
             onLeave: function (retval) {
                 const CUser = new User(this.user);
                 let characName = CUser.GetCharacName();
+                // 测试消息弹窗
+                // CUser.SendPacketMessage('hello.');
                 // 发送频道消息
                 gmt.SendNotiPacketMessage(`玩家[${characName}]上线了`); // 消息格式1
                 // gmt.SendGMMessage(`玩家上线了`, characName, 15, 110); // [角色名可添加好友]消息格式2
@@ -429,7 +431,7 @@ const HookGameEvent = {
             },
             onLeave: function (retval) {
                 // @ts-ignore
-                if (retval == 0 && this.upgrade_level <= upgrade_level) {
+                if (retval == 0 && this.upgrade_level < upgrade_level) {
                     // 强化失败
                     gmt.logger(`Upgrade Fail,Retval Success.`);
                     GameNative.Inven_Item_IncUpgrade(this.itemData);

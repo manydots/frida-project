@@ -287,7 +287,7 @@ class User {
     }
 
     /**
-     * 测试弹窗消息（客户端会崩溃，木青1031插件中修复，未测试）
+     * 测试弹窗消息（客户端会崩溃，木青1031插件中修复）
      * @param msg 发送文本
      */
     SendPacketMessage(msg: string): void {
