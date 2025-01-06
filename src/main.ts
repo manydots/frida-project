@@ -19,6 +19,9 @@ function start(): void {
     // gm.hook('IgnoreNearDungeon'); // 解锁副本门口摆摊
     gm.hook('UpgradeItem'); // 指定增幅、强化小于(默认8)时 必成功
     // gm.hook('UseItem1'); // UseItem1消耗物品使用
+    gm.hook('enable_createCreator'); // 开启创建缔造
+    gm.hook('FixSkilSlot'); // 真·14技能栏
+    gm.hook('UnlockItemTime'); // 装备解锁时间 默认3s
 
     // gm.hook('debugCode'); // 测试代码
 

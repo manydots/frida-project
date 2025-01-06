@@ -31,6 +31,7 @@ const GameNative = {
     fclose: new NativeFunction(Module.getExportByName(null, 'fclose'), 'int', ['int'], { abi: 'sysv' }),
     // 服务器内置定时器队列
     G_TimerQueue: new NativeFunction(ptr(0x80f647c), 'pointer', [], { abi: 'sysv' }),
+    get_rand_int: new NativeFunction(ptr(0x086b1b87), 'int', ['int'], { abi: 'sysv' }),
 
     // 获取包名
     Get_PacketName: new NativeFunction(ptr(0x082a2112), 'pointer', ['int', 'int'], { abi: 'sysv' }),
@@ -94,6 +95,7 @@ const GameNative = {
     // 服务器组包
     PacketGuard_PacketGuard: new NativeFunction(ptr(0x858dd4c), 'int', ['pointer'], { abi: 'sysv' }),
     InterfacePacketBuf_put_header: new NativeFunction(ptr(0x80cb8fc), 'int', ['pointer', 'int', 'int'], { abi: 'sysv' }),
+    InterfacePacketBuf_put_str: new NativeFunction(ptr(0x081b73e4), 'int', ['pointer', 'pointer', 'int'], { abi: 'sysv' }),
     InterfacePacketBuf_put_byte: new NativeFunction(ptr(0x80cb920), 'int', ['pointer', 'uint8'], { abi: 'sysv' }),
     InterfacePacketBuf_put_short: new NativeFunction(ptr(0x80d9ea4), 'int', ['pointer', 'uint16'], { abi: 'sysv' }),
     InterfacePacketBuf_put_int: new NativeFunction(ptr(0x80cb93c), 'int', ['pointer', 'int'], { abi: 'sysv' }),
@@ -190,12 +192,15 @@ const GameNative = {
     CStackableItem_GetItemType: new NativeFunction(ptr(0x8514a84), 'int', ['pointer'], { abi: 'sysv' }),
     // 获取徽章支持的镶嵌槽类型
     CStackableItem_getJewelTargetSocket: new NativeFunction(ptr(0x0822ca28), 'int', ['pointer'], { abi: 'sysv' }),
+    // 设置装备解锁时间
+    CUser_OnItemUnlockWaitTimeout: new NativeFunction(ptr(0x8646912), 'int', ['pointer'], { abi: 'sysv' }),
 
     // 返回选择角色界面
     CUser_ReturnToSelectCharacList: new NativeFunction(ptr(0x8686fee), 'int', ['pointer', 'int'], { abi: 'sysv' }),
     CUser_SendCmdErrorPacket: new NativeFunction(ptr(0x0867bf42), 'int', ['pointer', 'int', 'uint8'], { abi: 'sysv' }),
     // 发包给客户端
     CUser_Send: new NativeFunction(ptr(0x86485ba), 'int', ['pointer', 'pointer'], { abi: 'sysv' }),
+    CUser_SendPacket: new NativeFunction(ptr(0x867b8fe), 'int', ['pointer', 'int', 'pointer'], { abi: 'sysv' }),
 
     // 获取角色背包
     CUser_getCurCharacInvenW: new NativeFunction(ptr(0x80da28e), 'pointer', ['pointer'], { abi: 'sysv' }),
@@ -257,13 +262,23 @@ const GameNative = {
     Inven_Item_get_add_info: new NativeFunction(ptr(0x80f783a), 'int', ['pointer'], { abi: 'sysv' }),
     // 装备强化/增幅
     Inven_Item_IncUpgrade: new NativeFunction(ptr(0x0854b4be), 'int', ['pointer'], { abi: 'sysv' }),
+    CInventory_MakeItemPacket: new NativeFunction(ptr(0x084fc6bc), 'int', ['pointer', 'int', 'int', 'pointer'], { abi: 'sysv' }),
+    // 称号回包
+    CTitleBook_putItemData: new NativeFunction(ptr(0x08641a6a), 'int', ['pointer', 'pointer', 'int', 'pointer'], { abi: 'sysv' }),
+    // 设计图继承
+    CUser_copyItemOption: new NativeFunction(ptr(0x08671eb2), 'int', ['pointer', 'pointer', 'pointer'], { abi: 'sysv' }),
 
     // 获取时装管理器
     CInventory_GetAvatarItemMgrR: new NativeFunction(ptr(0x80dd576), 'pointer', ['pointer'], { abi: 'sysv' }),
     // 获取时装插槽数据
     WongWork_CAvatarItemMgr_getJewelSocketData: new NativeFunction(ptr(0x82f98f8), 'pointer', ['pointer', 'int'], { abi: 'sysv' }),
+    Inter_AuctionResultMyRegistedItems_dispatch_sig: new NativeFunction(ptr(0x084d7758), 'int', ['pointer', 'pointer', 'pointer', 'int'], { abi: 'sysv' }),
+    Inter_AuctionResultItemList_dispatch_sig: new NativeFunction(ptr(0x084d75bc), 'int', ['pointer', 'pointer', 'pointer', 'int'], { abi: 'sysv' }),
+    Inter_AuctionResultMyBidding_dispatch_sig: new NativeFunction(ptr(0x084d78f4), 'int', ['pointer', 'pointer', 'pointer', 'int'], { abi: 'sysv' }),
     // 时装镶嵌数据存盘
     DB_UpdateAvatarJewelSlot_makeRequest: new NativeFunction(ptr(0x843081c), 'pointer', ['int', 'int', 'pointer'], { abi: 'sysv' }),
+    Dispatcher_AddSocketToAvatar_dispatch_sig: new NativeFunction(ptr(0x0821a412), 'int', ['pointer', 'pointer', 'pointer'], { abi: 'sysv' }),
+    CEquipItem_GetItemType: new NativeFunction(ptr(0x08514d26), 'int', ['pointer'], { abi: 'sysv' }),
 
     // 获取装备魔法封印等级
     CEquipItem_GetRandomOptionGrade: new NativeFunction(ptr(0x8514e6e), 'int', ['pointer'], { abi: 'sysv' }),

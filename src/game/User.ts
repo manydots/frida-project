@@ -287,19 +287,103 @@ class User {
     }
 
     /**
-     * 测试弹窗消息（客户端会崩溃，木青1031插件中修复）
+     * 弹窗消息（客户端需要修复233表头）
      * @param msg 发送文本
+     * @param type 发给 1（个人）/0（全部）
      */
-    SendPacketMessage(msg: string): void {
+    SendPacketMessage(msg: string, type: number = 1): void {
         const user = this.CUser;
         const packet_guard = gmt.api_PacketGuard_PacketGuard();
         GameNative.InterfacePacketBuf_put_header(packet_guard, 0, 233);
         GameNative.InterfacePacketBuf_put_byte(packet_guard, 1);
         GameNative.InterfacePacketBuf_put_byte(packet_guard, msg.length);
         gmt.api_InterfacePacketBuf_put_string(packet_guard, msg);
-
         GameNative.InterfacePacketBuf_finalize(packet_guard, 1);
-        GameNative.CUser_Send(user, packet_guard);
+        if (type == 1) {
+            GameNative.CUser_Send(user, packet_guard);
+        } else {
+            GameNative.GameWorld_send_all_with_state(GameNative.G_GameWorld(), packet_guard, 3); // 只给state >= 3 的玩家发公告
+        }
+        GameNative.Destroy_PacketGuard_PacketGuard(packet_guard);
+    }
+
+    /**
+     * 超链接高亮消息
+     * @param {*} strarr 消息数组[消息类型str/其他，消息，rgba]
+     * @param {*} msgtype 广播类型 0系统公告栏  1绿色 2蓝色 3白色 5白色 6紫色 7绿色 8橙色 9蓝色 10-14 喇叭
+     * @param {*} type 发给 1（个人）/0（全部）
+     * @param {*} Symbol 表情
+     */
+    SendHyperLinkMessage(strarr: Array<any>, msgtype: any, type: any, Symbol: any) {
+        // @光头大佬 https://tieba.baidu.com/p/8931699630
+        const user = this.CUser;
+        const bufferSize = 255;
+        const strptr = Memory.alloc(bufferSize);
+        let startlen = 0;
+        let cnt = 0;
+
+        // 准备表情符号数据
+        const emojiBytes = Symbol >= 1 ? [0xc2, 0x80, 0x20, 0x1e, 0x20, Symbol, 0x1f] : [0xc2, 0x80, 0x20];
+        strptr.add(startlen).writeByteArray(emojiBytes);
+        startlen += emojiBytes.length;
+
+        // 处理消息字符串数组
+        for (const item of strarr) {
+            const [strtype, msgContent, flags] = item;
+            strptr.add(startlen).writeByteArray([0xc2, 0x80]);
+            startlen += 2; // 更新起始长度
+            const msgstr = strtype === 'str' ? msgContent : `[${gmt.GetItemName(parseInt(msgContent))}]`;
+            const str_ptr = Memory.allocUtf8String(msgstr) as any;
+            const str_len = GameNative.strlen(str_ptr);
+            strptr.add(startlen).writeByteArray(str_ptr.readByteArray(str_len));
+            startlen += str_len;
+
+            // 检查是否需要添加额外的字节
+            if (flags[3] === 255) {
+                strptr.add(startlen).writeByteArray([0xc2, 0x80]);
+                startlen += 2;
+                cnt++;
+            }
+        }
+        // 结束字符串并准备数据包
+        strptr.add(startlen).writeByteArray([0xc2, 0x80]);
+        startlen += 2;
+        const packet_guard = gmt.api_PacketGuard_PacketGuard();
+        GameNative.InterfacePacketBuf_put_header(packet_guard, 0, 370);
+        GameNative.InterfacePacketBuf_put_byte(packet_guard, msgtype);
+        GameNative.InterfacePacketBuf_put_short(packet_guard, 0); // 可以指定发送者ID
+        GameNative.InterfacePacketBuf_put_byte(packet_guard, 0); // 可以指定发送者ID
+        GameNative.InterfacePacketBuf_put_int(packet_guard, startlen);
+        GameNative.InterfacePacketBuf_put_str(packet_guard, strptr, startlen);
+        GameNative.InterfacePacketBuf_put_byte(packet_guard, cnt);
+        // 处理附加信息
+        for (const item of strarr) {
+            const [_strtype, _msgContent, _RbgColor] = item;
+            // TODO put_binary 104是完整信息可以点开 3不可以点开
+            if (_RbgColor[3] === 255) {
+                let RbgInfoptr = Memory.alloc(104);
+                RbgInfoptr.writeByteArray(_RbgColor);
+                // 处理消息类型
+                if (_strtype == 'item') {
+                    RbgInfoptr.add(0x4).writeU32(_msgContent);
+                    const Citem = GameNative.CDataManager_find_item(GameNative.G_CDataManager(), _msgContent);
+                    if (!GameNative.CItem_is_stackable(Citem)) {
+                        RbgInfoptr.add(0x8).writeU32(GameNative.get_rand_int(0));
+                        RbgInfoptr.add(0xe).writeU16(GameNative.CEquipItem_get_endurance(Citem));
+                    }
+                }
+                GameNative.InterfacePacketBuf_put_binary(packet_guard, RbgInfoptr, 104);
+            }
+        }
+        // 完成数据包
+        GameNative.InterfacePacketBuf_finalize(packet_guard, 1);
+        // 根据类型发送数据包
+        if (type === 1) {
+            GameNative.CUser_SendPacket(user, 1, packet_guard);
+        } else {
+            GameNative.GameWorld_send_all_with_state(GameNative.G_GameWorld(), packet_guard, 3); // 只给状态 >= 3 的玩家发送公告
+        }
+        // 清理数据包
         GameNative.Destroy_PacketGuard_PacketGuard(packet_guard);
     }
 

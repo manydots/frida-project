@@ -236,6 +236,12 @@ class Gmt {
             mysql_frida,
             'CREATE TABLE if not exists dp_login(id INT(10) not null primary key AUTO_INCREMENT, uid INT(10) default 0 not null, cid INT(10) default 0 not null, first_login_time INT(10) UNSIGNED default 0 not null, create_time DATETIME DEFAULT NULL);'
         );
+
+        // 创建徽章数据库表 frida.data 创建数据库，排序从150开始，也可以从大一点的数值开始
+        this.api_MySQL_exec(
+            mysql_frida,
+            'CREATE TABLE if not exists data(equ_id int(11) AUTO_INCREMENT, cid INT(10) default 0 not null, jewel_data blob NOT NULL, index_flag int(11), date datetime, PRIMARY KEY (equ_id)) ENGINE=InnoDB DEFAULT CHARSET=utf8,AUTO_INCREMENT = 150;'
+        );
     }
 
     // 关闭数据库（卸载插件前调用）
@@ -328,6 +334,47 @@ class Gmt {
             };
         }
         return item_id.toString();
+    }
+
+    /**
+     * 根据item id返回rgba
+     * @param item_id 道具id
+     * @returns 品级对应rgba
+     */
+    GetItemIdRGBA(item_id: any): any {
+        const itemTypeColor = [
+            [255, 255, 255, 255],
+            [104, 213, 237, 255],
+            [179, 107, 255, 255],
+            [255, 0, 240, 255],
+            [255, 177, 0, 255],
+            [255, 102, 102, 255]
+        ];
+        // pvf中获取装备数据
+        const item_data = GameNative.CDataManager_find_item(GameNative.G_CDataManager(), item_id);
+        // 稀有度0-5 白蓝紫粉橙红
+
+        const equ_rarity = GameNative.CItem_getRarity(item_data);
+        console.log('CItem_getRarity', equ_rarity);
+        return itemTypeColor[equ_rarity];
+    }
+
+    /**
+     * 将字符串转化成高亮超链接数组
+     * @param {*} str 字符串
+     * @param {*} rgba 指定rgba
+     */
+    hyperLinkChatStrConvertArray(str: any, rgba: any): any {
+        // 如果包含 \r  \n \t或空字符串，直接返回一个数组。字符串太长也不行
+        if (str.includes('\r') || str.includes('\n') || str.includes('\t') || str.includes(' ') || str.length >= 15) {
+            return [['str', str, rgba]];
+        }
+        let result = [];
+        for (let i = 0; i < str.length; i++) {
+            // 将字符和rgba值作为一个数组添加到结果数组中
+            result.push(['str', str[i], rgba]);
+        }
+        return result;
     }
 
     /**
@@ -538,15 +585,29 @@ class Gmt {
     }
 
     /**
-     * 延迟delay执行函数
+     * 在dispatcher线程执行 延迟delay执行函数
      * @param func Function
-     * @param args 参数列表
      * @param delay 延迟时间
+     * @param args 参数
      */
-    RunScript_delay(func: Function, delay: number, ...args: any[]): void {
+    scheduleOnMainThread_delay(func: Function, delay: number, args: any) {
+        // setTimeout(this.scheduleOnMainThread, delay, func, args, true);
         let _self = this;
         setTimeout(() => {
-            func.call(_self, args);
+            _self.scheduleOnMainThread(func, args, true);
+        }, delay);
+    }
+
+    /**
+     * 延迟delay执行函数
+     * @param func Function
+     * @param delay 延迟时间
+     * @param args 参数列表
+     */
+    RunScript_delay(func: Function, delay: number, ...args: any): void {
+        let _self = this;
+        setTimeout(() => {
+            func.call(_self, func, args);
         }, delay);
     }
 

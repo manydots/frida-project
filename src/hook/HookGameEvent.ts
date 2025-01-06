@@ -11,6 +11,7 @@ interface Params {
     repair?: boolean; // 是否自动修理 默认false
     first_login_gift?: boolean; // 是否开启当日首次登录福利 默认false
     upgrade_level?: number; // 处理增幅/强化小于[upgrade_level]必成功 默认+8
+    second?: number; // 装备解锁时间 单位(s)
 }
 
 const HookGameEvent = {
@@ -38,8 +39,31 @@ const HookGameEvent = {
                 let characName = CUser.GetCharacName();
                 // 测试消息弹窗
                 // CUser.SendPacketMessage('hello.');
+                // CUser.SendHyperLinkMessage(
+                //     [
+                //         ['str', '玩家', [150, 255, 30, 255]],
+                //         ['str', `『${characName}』`, [0, 136, 255, 255]],
+                //         ['str', `爆出`, [150, 255, 30, 255]],
+                //         ['item', 3299, gmt.GetItemIdRGBA(3299)],
+                //         ['item', 27098, gmt.GetItemIdRGBA(27098)]
+                //     ],
+                //     2,
+                //     1,
+                //     45
+                // );
                 // 发送频道消息
-                gmt.SendNotiPacketMessage(`玩家[${characName}]上线了`); // 消息格式1
+                CUser.SendHyperLinkMessage(
+                    [
+                        // ...gmt.hyperLinkChatStrConvertArray('完成悬赏任务！', [150, 255, 30, 255])
+                        ['str', '玩家', [150, 255, 30, 255]],
+                        ['str', `『${characName}』`, [0, 136, 255, 255]],
+                        ['str', `上线了`, [150, 255, 30, 255]]
+                    ],
+                    14,
+                    0,
+                    4
+                );
+                // gmt.SendNotiPacketMessage(`玩家[${characName}]上线了`); // 消息格式1
                 // gmt.SendGMMessage(`玩家上线了`, characName, 15, 110); // [角色名可添加好友]消息格式2
                 // gmt.SendGMMessage(`玩家上线了`, characName, 33, 11); // [私聊]消息格式3
 
@@ -154,7 +178,20 @@ const HookGameEvent = {
                 // 装备数量不可以通过 num 获取
                 gmt.logger('ItemRarity', ItemRarity);
                 if (ItemRarity >= 2) {
-                    gmt.SendNotiPacketMessage(`恭喜「${charac_name}」捡起了传说中的[${item_name}]${num}个`, 14);
+                    // gmt.SendNotiPacketMessage(`恭喜「${charac_name}」捡起了传说中的[${item_name}]${num}个`, 14);
+                    // 发送频道消息
+                    CUser.SendHyperLinkMessage(
+                        [
+                            ['str', '恭喜玩家', [150, 255, 30, 255]],
+                            ['str', `『${charac_name}』`, [0, 136, 255, 255]],
+                            ['str', `捡起了传说中的`, [150, 255, 30, 255]],
+                            ['item', item_id, gmt.GetItemIdRGBA(item_id)],
+                            ['str', `${num}个`, [150, 255, 30, 255]]
+                        ],
+                        14,
+                        0,
+                        44
+                    );
                 }
             },
             onLeave: function (retval) {}
@@ -419,6 +456,22 @@ const HookGameEvent = {
     },
 
     /**
+     * 14技能栏
+     */
+    FixSkilSlot(): void {
+        Memory.protect(ptr(0x08604b1e), 4, 'rwx');
+        ptr(0x08604b1e).writeByteArray([0x83, 0x7d, 0xec, 0x07]);
+        Memory.protect(ptr(0x08604b8c), 7, 'rwx');
+        ptr(0x08604b8c).writeByteArray([0xc7, 0x45, 0xe4, 0x08, 0x00, 0x00, 0x00]);
+        Memory.protect(ptr(0x08604a09), 4, 'rwx');
+        ptr(0x08604a09).writeByteArray([0x83, 0x7d, 0x0c, 0x07]);
+        Memory.protect(ptr(0x086050b1), 7, 'rwx');
+        ptr(0x086050b1).writeByteArray([0xc7, 0x45, 0xec, 0x08, 0x00, 0x00, 0x00]);
+        Memory.protect(ptr(0x0860511c), 7, 'rwx');
+        ptr(0x0860511c).writeByteArray([0xc7, 0x45, 0xe8, 0x08, 0x00, 0x00, 0x00]);
+    },
+
+    /**
      * 重置强化/增幅结果
      */
     UpgradeItem(params?: Params): void {
@@ -458,6 +511,34 @@ const HookGameEvent = {
                 CUser.SendNotiPacketMessage(`玩家[${CUser.GetCharacName()}]在地下城[${CParty.GetDungeonName()}]中使用了[${gmt.GetItemName(item_id)}]`, 1);
             },
             onLeave: function (retval) {}
+        });
+    },
+
+    /**
+     * 设置装备解锁时间
+     */
+    UnlockItemTime(params?: Params): void {
+        const second = params?.second ?? 3;
+        //std::_Rb_tree_iterator<std::pair<uchar const,stItemLockInfo>>::operator->(void)	085432CC
+        Interceptor.attach(ptr(0x85432cc), {
+            onEnter: function (args) {},
+            onLeave: function (retval) {
+                const time = retval.add(4).readU32() - 259200 + second;
+                gmt.logger(`set_equipment_unlock_time:${time}s.`);
+                retval.add(4).writeU32(time);
+            }
+        });
+
+        // item_lock::CItemLock::DoItemUnlock(CUser *,int,int)	0854231A
+        Interceptor.attach(ptr(0x854231a), {
+            onEnter: function (args) {
+                this.user = args[1];
+            },
+            onLeave: function (retval) {
+                second > 0
+                    ? gmt.scheduleOnMainThread_delay(GameNative.CUser_OnItemUnlockWaitTimeout, 1e3 * second, [this.user])
+                    : GameNative.CUser_OnItemUnlockWaitTimeout(this.user);
+            }
         });
     },
 
