@@ -12,6 +12,7 @@ interface Params {
     first_login_gift?: boolean; // 是否开启当日首次登录福利 默认false
     upgrade_level?: number; // 处理增幅/强化小于[upgrade_level]必成功 默认+8
     second?: number; // 装备解锁时间 单位(s)
+    max_level?: number; // 服务端等级上限
 }
 
 const HookGameEvent = {
@@ -324,7 +325,11 @@ const HookGameEvent = {
                     // console.log(gmt.GetPacketName(1, 18));
                     // console.log(gmt.GetPacketName(0, 18));
                     // _self.autoRepairEqu(user); // 自动修理
-                    // let CUser = new User(user);
+                    let CUser = new User(user);
+                    let characName = CUser.GetCharacName();
+                    // 测试消息弹窗
+                    CUser.SendPacketMessage(`hello ${characName}`);
+
                     // CUser.clearAvartar();
                     // CUser.Disjoint(9); // 9-24 装备前2行
                     // gmt.logger(CUser.GetItemCount(3037));
@@ -338,8 +343,8 @@ const HookGameEvent = {
                     //     [3299, 1],
                     //     [3037, 100]
                     // ]);
-                    let CParty = new Party(user);
-                    CParty.ReturnToVillage();
+                    // let CParty = new Party(user);
+                    // CParty.ReturnToVillage();
                 }
             },
             onLeave: function (retval) {}
@@ -542,6 +547,30 @@ const HookGameEvent = {
         });
     },
 
+    /**
+     * 设置服务端等级上限
+     **/
+    SetMaxLevel(params?: Params): void {
+        const max_level = params?.max_level ?? 70;
+        gmt.writeByteArray(0x08360c3b, [max_level]);
+        gmt.writeByteArray(0x08360c79, [max_level]);
+        gmt.writeByteArray(0x08360cc4, [max_level]);
+        gmt.writeByteArray(0x08662f55, [max_level]);
+        gmt.writeByteArray(0x086630f3, [max_level]);
+        gmt.writeByteArray(0x086638f6, [max_level]);
+        gmt.writeByteArray(0x08665d28, [max_level - 1]);
+        gmt.writeByteArray(0x08666e9c, [max_level - 1]);
+        gmt.writeByteArray(0x0866a4a8, [max_level - 1]);
+        gmt.writeByteArray(0x0866a659, [max_level]);
+        gmt.writeByteArray(0x0866a929, [max_level]);
+        gmt.writeByteArray(0x0866a941, [max_level]);
+        gmt.writeByteArray(0x08689d4b, [max_level - 1]);
+        gmt.writeByteArray(0x0868fece, [max_level]);
+        gmt.writeByteArray(0x0868feda, [max_level]);
+        gmt.writeByteArray(0x085bb6f0, [max_level]);
+        gmt.writeByteArray(0x085bb7de, [max_level]);
+    },
+    
     /**
      * 测试
      **/

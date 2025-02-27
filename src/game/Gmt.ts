@@ -257,6 +257,35 @@ class Gmt {
         });
     }
 
+    writeJmpCode(address: any, target: any): any {
+        Memory.patchCode(address, 5, (code) => {
+            code.writeU8(0xe9);
+            code.writeS32(target.sub(address.add(5)).toInt32());
+        });
+    }
+
+    writeCallCode(address: any, target: any): any {
+        Memory.patchCode(address, 5, (code) => {
+            code.writeU8(0xe8);
+            code.writeS32(target.sub(address.add(5)).toInt32());
+        });
+    }
+
+    writeNop(address: any, size: any): any {
+        Memory.patchCode(address, size, (code) => {
+            for (let i = 0; i < size; i++) {
+                // @ts-ignore
+                code.writeU8(0x90, i);
+            }
+        });
+    }
+
+    writeByteArray(p: any, code: any): any {
+        const address = ptr(p);
+        Memory.protect(address, code.length, 'rwx');
+        address.writeByteArray(code);
+    }
+
     /**
      * 获取数据库句柄
      * @param dbname
